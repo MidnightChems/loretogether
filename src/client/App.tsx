@@ -1,158 +1,156 @@
 import React, { useState } from "react";
 
-type VoteOption = "Car" | "SUV" | "Truck";
+type Screen = "story" | "poll" | "personal";
+type VoteOption = "Choice 1" | "Choice 2" | "Choice 3";
+type PersonalOption = "Option A" | "Option B" | "Option C";
 
-const storyPages: string[] = [
+const storyPages = [
   "John walked down the street with his dog, Scout. The sun was shining, and today was the day he’d finally buy a car.",
   "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun.",
   "Scout barked excitedly — he loved car rides, no matter what they were in."
 ];
 
 export default function App() {
+  const [screen, setScreen] = useState<Screen>("story");
   const [page, setPage] = useState(0);
-  const [selected, setSelected] = useState<VoteOption | null>(null);
-  const [votes, setVotes] = useState<Record<VoteOption, number>>({
-    Car: 5,
-    SUV: 3,
-    Truck: 2
-  });
-  const [showResults, setShowResults] = useState(false);
 
-  const handleVote = (option: VoteOption) => {
-    if (selected) return;
-    setSelected(option);
-    setVotes((prev) => ({
-      ...prev,
-      [option]: prev[option] + 1
-    }));
-    setShowResults(true);
+  // --- POLL STATE ---
+  const [pollSelected, setPollSelected] = useState<VoteOption | null>(null);
+  const [pollVotes, setPollVotes] = useState<Record<VoteOption, number>>({
+    "Choice 1": 5,
+    "Choice 2": 9,
+    "Choice 3": 5
+  });
+  const [hasVotedPoll, setHasVotedPoll] = useState(false);
+
+  // --- PERSONAL CHOICE STATE ---
+  const [personalChoice, setPersonalChoice] = useState<PersonalOption | null>(null);
+
+  const totalPollVotes = Object.values(pollVotes).reduce((a, b) => a + b, 0);
+
+  const handlePollVote = (option: VoteOption) => {
+    if (hasVotedPoll) return;
+    setPollSelected(option);
+    setPollVotes(prev => ({ ...prev, [option]: prev[option] + 1 }));
+    setHasVotedPoll(true);
   };
 
-  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+  const handlePersonalSelect = (option: PersonalOption) => {
+    setPersonalChoice(option);
+  };
 
-  return (
+  const renderHeader = () => (
     <div style={{
-      fontFamily: "Arial, sans-serif",
-      backgroundColor: "#f6f7f8",
-      minHeight: "100vh",
-      padding: "32px",
-      display: "flex",
-      justifyContent: "center",
+      borderBottom: "1px solid #ccc",
+      paddingBottom: "8px",
+      marginBottom: "12px",
+      textAlign: "center"
     }}>
+      <h3>LoreTogether</h3>
+      <div>Story Name — Chapter {page + 1}</div>
+      <div>Series #1</div>
+    </div>
+  );
+
+  const renderStoryScreen = () => (
+    <div>
+      {renderHeader()}
+      <p style={{ minHeight: "100px" }}>{storyPages[page]}</p>
       <div style={{
-        backgroundColor: "white",
-        borderRadius: "12px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        padding: "24px",
-        maxWidth: "700px",
-        width: "100%"
+        display: "flex",
+        justifyContent: "space-between",
+        marginTop: "40px"
       }}>
-        <h1 style={{
-          fontSize: "1.75rem",
-          fontWeight: 700,
-          marginBottom: "0.5rem",
-          textAlign: "center"
-        }}>Choose Our Lore, together.</h1>
+        <button
+          onClick={() => setPage(p => Math.max(0, p - 1))}
+          disabled={page === 0}
+          style={{ fontSize: "20px", padding: "8px 16px" }}
+        >
+          ◀
+        </button>
+        <button
+          onClick={() => setPage(p => Math.min(storyPages.length - 1, p + 1))}
+          disabled={page === storyPages.length - 1}
+          style={{ fontSize: "20px", padding: "8px 16px" }}
+        >
+          ▶
+        </button>
+      </div>
 
-        <p style={{
-          textAlign: "center",
-          color: "#787c7e",
-          marginBottom: "24px"
-        }}>Navigate through the story and decide what happens on the next episode!</p>
-
-        <div style={{
-          border: "1px solid #edeff1",
-          borderRadius: "8px",
-          padding: "20px",
-          background: "#fff",
-        }}>
-          <h2 style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>The Test Drive</h2>
-          <p style={{ color: "#787c7e", marginBottom: "1rem" }}>
-            Page {page + 1} of {storyPages.length}
-          </p>
-
-          <p style={{ lineHeight: 1.5, marginBottom: "1.5rem" }}>{storyPages[page]}</p>
-
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            {page > 0 && (
-              <button
-                onClick={() => setPage(p => p - 1)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#000000ff",
-                  cursor: "pointer",
-                  fontWeight: 600
-                }}
-              >
-                ← Back
-              </button>
-            )}
-            {page < storyPages.length - 1 ? (
-              <button
-                onClick={() => setPage(p => p + 1)}
-                style={{
-                  backgroundColor: "#000000ff",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "8px 16px",
-                  fontWeight: 600,
-                  cursor: "pointer"
-                }}
-              >
-                Forward →
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        {page === storyPages.length - 1 && (
-          <div style={{ marginTop: "32px" }}>
-            <h3 style={{ fontSize: "1.25rem", marginBottom: "1rem" }}>What should John test drive first?</h3>
-            {!showResults ? (
-              <div>
-                {(["Car", "SUV", "Truck"] as VoteOption[]).map(option => (
-                  <button
-                    key={option}
-                    onClick={() => handleVote(option)}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      background: selected === option ? "#0079d3" : "#f6f7f8",
-                      color: selected === option ? "#fff" : "#1a1a1b",
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                      padding: "10px",
-                      marginBottom: "10px",
-                      cursor: "pointer",
-                      fontWeight: 600
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div>
-                {(["Car", "SUV", "Truck"] as VoteOption[]).map(option => {
-                  const percent = ((votes[option] / totalVotes) * 100).toFixed(1);
-                  return (
-                    <div key={option} style={{
-                      marginBottom: "8px",
-                      background: "#f6f7f8",
-                      borderRadius: "6px",
-                      padding: "10px"
-                    }}>
-                      {option}: {percent}% ({votes[option]} votes)
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <button onClick={() => setScreen("poll")}>Go to Poll</button>
+        <button onClick={() => setScreen("personal")} style={{ marginLeft: "10px" }}>
+          Personal Choice
+        </button>
       </div>
     </div>
   );
+
+  const renderPollScreen = () => (
+    <div>
+      {renderHeader()}
+      <h4>What should happen next?</h4>
+      {(["Choice 1", "Choice 2", "Choice 3"] as VoteOption[]).map(option => {
+        const percent = ((pollVotes[option] / totalPollVotes) * 100).toFixed(1);
+        return (
+          <div
+            key={option}
+            onClick={() => handlePollVote(option)}
+            style={{
+              margin: "10px 0",
+              padding: "10px",
+              border: pollSelected === option ? "2px solid black" : "1px solid #ccc",
+              borderRadius: "6px",
+              cursor: hasVotedPoll ? "default" : "pointer"
+            }}
+          >
+            {option}
+            {hasVotedPoll && (
+              <span style={{ marginLeft: "10px", fontSize: "0.9em", color: "#444" }}>
+                {percent}% ({pollVotes[option]} votes)
+              </span>
+            )}
+          </div>
+        );
+      })}
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={() => setScreen("story")}>Back to Story</button>
+      </div>
+    </div>
+  );
+
+  const renderPersonalScreen = () => (
+    <div>
+      {renderHeader()}
+      <h4>What should John say to Scout?</h4>
+      {(["Option A", "Option B", "Option C"] as PersonalOption[]).map(option => (
+        <div
+          key={option}
+          onClick={() => handlePersonalSelect(option)}
+          style={{
+            margin: "10px 0",
+            padding: "10px",
+            border: personalChoice === option ? "2px solid black" : "1px solid #ccc",
+            borderRadius: "6px",
+            cursor: "pointer"
+          }}
+        >
+          {option}
+        </div>
+      ))}
+      {personalChoice && (
+        <div style={{ marginTop: "20px", fontStyle: "italic" }}>
+          You chose: <b>{personalChoice}</b>
+        </div>
+      )}
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={() => setScreen("story")}>Back to Story</button>
+      </div>
+    </div>
+  );
+
+  if (screen === "story") return renderStoryScreen();
+  if (screen === "poll") return renderPollScreen();
+  if (screen === "personal") return renderPersonalScreen();
+  return null;
 }
