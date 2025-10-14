@@ -26,7 +26,7 @@ const EPISODE: Episode = {
       text:
         "John kneeled beside his dog, Scout, before they left the house. Today was the day he’d finally buy a car — and Scout needed a new collar for the big day.",
       personalChoice: {
-        id: "pc1",
+        id: "collar",
         prompt: "Which collar does John choose for Scout?",
         options: [
           { id: "blue", text: "Blue — calm and dependable." },
@@ -38,12 +38,12 @@ const EPISODE: Episode = {
     {
       id: "p2",
       text:
-        "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{color}} collar, tail wagging all the way to the curb.",
+        "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{collar}} collar, tail wagging all the way to the curb.",
     },
     {
       id: "p3",
       text:
-        "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn’t help but notice how the {{color}} gleamed under the light — maybe it was a sign.",
+        "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn’t help but notice how the {{collar}} gleamed under the light — maybe it was a sign.",
     },
     {
       id: "p4",
@@ -182,15 +182,25 @@ export default function App() {
   const currentPage = EPISODE.pages[pageIdx];
   if (!currentPage) return <div>Loading story...</div>;
 
-  // Replace {{color}} in text
+  // Dynamically replace {{placeholder}} values from player's choices
   const resolvedText = useMemo(() => {
     let text = currentPage.text;
-    const pickedColor = personal["pc1"];
-    if (pickedColor) {
-      text = text.replace(/{{color}}/g, pickedColor);
-    }
+
+    // Match {{variable}} patterns
+    const matches = text.match(/{{(.*?)}}/g);
+    if (!matches) return text;
+
+    matches.forEach((token) => {
+      const key = token.replace(/[{}]/g, ""); // remove curly braces
+      const val = personal[key];
+      if (val) {
+        text = text.replace(new RegExp(token, "g"), val);
+      }
+    });
+
     return text;
   }, [currentPage.text, personal]);
+
 
   function onPickPersonal(choiceId: string, optionId: string) {
     setPersonal((prev) => ({ ...prev, [choiceId]: optionId }));
