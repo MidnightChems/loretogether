@@ -14,7 +14,7 @@ type Episode = {
   poll: Poll;
 };
 
-/** ---------- MOCK DATA (data-driven story) ---------- */
+/** ---------- STORY DATA ---------- */
 const EPISODE: Episode = {
   id: "ep1",
   title: "Man and His Dog",
@@ -24,31 +24,31 @@ const EPISODE: Episode = {
     {
       id: "p1",
       text:
-        "John walked down the street with his dog, Scout. The sun was shining, and today was the day he’d finally buy a car.",
-    },
-    {
-      id: "p2",
-      text:
-        "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun.",
+        "John kneeled beside his dog, Scout, before they left the house. Today was the day he’d finally buy a car — and Scout needed a new collar for the big day.",
       personalChoice: {
         id: "pc1",
-        prompt: "How does John hype up Scout?",
+        prompt: "Which collar does John choose for Scout?",
         options: [
-          { id: "A", text: "“Buddy, we’re getting the FAST one.”" },
-          { id: "B", text: "“Let’s find something comfy, pal.”" },
-          { id: "C", text: "“Adventure wagon time!”" },
+          { id: "blue", text: "Blue — calm and dependable." },
+          { id: "red", text: "Red — bold and full of energy." },
+          { id: "green", text: "Green — adventurous and fresh." },
         ],
       },
     },
     {
+      id: "p2",
+      text:
+        "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{color}} collar, tail wagging all the way to the curb.",
+    },
+    {
       id: "p3",
       text:
-        "The salesperson waved. “Looking for something sporty, rugged, or roomy?” Scout’s tail thumped.",
+        "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn’t help but notice how the {{color}} gleamed under the light — maybe it was a sign.",
     },
     {
       id: "p4",
       text:
-        "John glanced at Scout and smiled. (Your earlier vibe sticks with him here.)",
+        "The salesperson waved. “Looking for something sporty, rugged, or roomy?” John grinned, scratching Scout’s chin. “Let’s find out.”",
     },
   ],
   poll: {
@@ -58,14 +58,14 @@ const EPISODE: Episode = {
   },
 };
 
-/** ---------- Styles (no external deps) ---------- */
+/** ---------- Styles ---------- */
 const theme = {
   bg: "#0f0f0f",
   card: "#1a1a1b",
   subtle: "#aaaaaa",
   text: "#f5f5f5",
   border: "#2c2c2c",
-  accent: "#ff4500", // Reddit orange
+  accent: "#ff4500",
   accentHover: "#ff6326",
 };
 
@@ -138,51 +138,40 @@ const choiceBtn = (active: boolean): React.CSSProperties => ({
   marginTop: 8,
 });
 
-/** ---------- Mock API hooks (default to 0 when backend absent) ---------- */
+/** ---------- Mock API hooks ---------- */
 async function fetchVotes(pollId: string): Promise<Record<string, number> | null> {
-  // TODO: replace with Devvit KV / backend call. Return null to default to zeroed counts.
   void pollId;
   return null;
 }
-
 async function submitVote(pollId: string, option: string): Promise<void> {
-  // TODO: replace with Devvit backend call (rate-limit + user gating).
   console.log("submitVote", pollId, option);
 }
 
 /** ---------- App ---------- */
 export default function App() {
   const [pageIdx, setPageIdx] = useState(0);
-
-  // personal choices: choiceId -> optionId
   const [personal, setPersonal] = useState<Record<string, string>>({});
-
-  // poll state
   const [hasVoted, setHasVoted] = useState(false);
   const [pollSel, setPollSel] = useState<string | null>(null);
   const [pollCounts, setPollCounts] = useState<Record<string, number>>({});
-
   const atEnd = pageIdx === EPISODE.pages.length - 1;
 
-  // Initialize poll counts (default 0s) and then try to hydrate from backend
+  // Load personal choices from sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem("personalChoices");
+    if (stored) setPersonal(JSON.parse(stored));
+  }, []);
+
+  // Save on update
+  useEffect(() => {
+    sessionStorage.setItem("personalChoices", JSON.stringify(personal));
+  }, [personal]);
+
+  // Poll setup
   useEffect(() => {
     const zeros: Record<string, number> = {};
     EPISODE.poll.options.forEach((opt) => (zeros[opt] = 0));
     setPollCounts(zeros);
-
-    let mounted = true;
-    (async () => {
-      const res = await fetchVotes(EPISODE.poll.id);
-      if (!mounted) return;
-      if (res) {
-        // Ensure all options exist
-        const merged: Record<string, number> = { ...zeros, ...res };
-        setPollCounts(merged);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   const totalVotes = useMemo(
@@ -191,27 +180,16 @@ export default function App() {
   );
 
   const currentPage = EPISODE.pages[pageIdx];
-  if (!currentPage) {
-  return <div>Loading story...</div>;
-}
+  if (!currentPage) return <div>Loading story...</div>;
 
-  // Replace inline reference with the player's earlier personal choice text (if any)
+  // Replace {{color}} in text
   const resolvedText = useMemo(() => {
-    if (!currentPage.text.includes("(Your earlier vibe sticks with him here.)")) {
-      return currentPage.text;
+    let text = currentPage.text;
+    const pickedColor = personal["pc1"];
+    if (pickedColor) {
+      text = text.replace(/{{color}}/g, pickedColor);
     }
-    const picked = personal["pc1"];
-    if (!picked) return currentPage.text;
-    const map: Record<string, string> = {
-      A: "John’s eyes sparkle — *fast* sounds right today.",
-      B: "John rubs Scout’s ears — comfort first.",
-      C: "John grins — the open road is calling.",
-    };
-    const flavor = map[picked] ?? "";
-    return currentPage.text.replace(
-      "(Your earlier vibe sticks with him here.)",
-      flavor
-    );
+    return text;
   }, [currentPage.text, personal]);
 
   function onPickPersonal(choiceId: string, optionId: string) {
@@ -220,7 +198,6 @@ export default function App() {
 
   async function onPollVote(option: string) {
     if (hasVoted) return;
-    // optimistic update
     setHasVoted(true);
     setPollSel(option);
     setPollCounts((prev) => ({ ...prev, [option]: (prev[option] ?? 0) + 1 }));
@@ -228,17 +205,12 @@ export default function App() {
       await submitVote(EPISODE.poll.id, option);
     } catch (e) {
       console.error(e);
-      // rollback on failure
-      setHasVoted(false);
-      setPollSel(null);
-      setPollCounts((prev) => ({ ...prev, [option]: Math.max(0, (prev[option] ?? 1) - 1) }));
     }
   }
 
   return (
     <div style={wrap}>
       <div style={card}>
-        {/* Header */}
         <div style={hdr}>
           <div style={{ fontSize: 12, color: theme.subtle }}>{EPISODE.series}</div>
           <div style={{ fontSize: 22, fontWeight: 800 }}>{EPISODE.title}</div>
@@ -247,10 +219,9 @@ export default function App() {
           </div>
         </div>
 
-        {/* Story text */}
         <div style={storyText}>{resolvedText}</div>
 
-        {/* Personal choice (contextual, mid-story) */}
+        {/* Personal choice */}
         {currentPage.personalChoice && (
           <div style={{ marginTop: 8 }}>
             <div style={{ fontSize: 14, color: theme.subtle, marginBottom: 6 }}>
@@ -270,18 +241,6 @@ export default function App() {
                 </button>
               );
             })}
-            {personal[currentPage.personalChoice.id] && (
-              <div style={{ marginTop: 8, fontSize: 13, color: theme.subtle }}>
-                You chose:{" "}
-                <span style={{ color: theme.text, fontWeight: 700 }}>
-                  {
-                    currentPage.personalChoice.options.find(
-                      (o) => o.id === personal[currentPage.personalChoice!.id]
-                    )?.text
-                  }
-                </span>
-              </div>
-            )}
           </div>
         )}
 
@@ -291,13 +250,10 @@ export default function App() {
             style={circleBtn(pageIdx === 0)}
             disabled={pageIdx === 0}
             onClick={() => setPageIdx((p) => Math.max(0, p - 1))}
-            aria-label="Previous page"
-            title="Previous"
           >
             ◀
           </button>
 
-          {/* End-of-episode poll */}
           {atEnd ? (
             <div style={{ flex: 1, margin: "0 12px" }}>
               <div style={{ fontWeight: 700, marginBottom: 8 }}>
@@ -306,9 +262,7 @@ export default function App() {
               {EPISODE.poll.options.map((opt) => {
                 const count = pollCounts[opt] ?? 0;
                 const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
-                const showResults = hasVoted; // only show after vote (per your rule)
                 const selected = pollSel === opt;
-
                 return (
                   <div key={opt} style={{ marginTop: 8 }}>
                     <button
@@ -327,39 +281,14 @@ export default function App() {
                     >
                       {opt}
                     </button>
-                    {showResults && (
+                    {hasVoted && (
                       <div style={{ marginTop: 6, fontSize: 12, color: theme.subtle }}>
                         {pct}% ({count} vote{count === 1 ? "" : "s"})
-                        <div
-                          style={{
-                            marginTop: 6,
-                            height: 8,
-                            background: "#262626",
-                            borderRadius: 999,
-                            overflow: "hidden",
-                            border: `1px solid ${theme.border}`,
-                          }}
-                          aria-hidden
-                        >
-                          <div
-                            style={{
-                              width: `${pct}%`,
-                              height: "100%",
-                              background: theme.accent,
-                              transition: "width 200ms ease",
-                            }}
-                          />
-                        </div>
                       </div>
                     )}
                   </div>
                 );
               })}
-              {hasVoted && (
-                <div style={{ marginTop: 10, fontSize: 12, color: theme.subtle }}>
-                  Thanks for voting! Your choice helps steer the next chapter.
-                </div>
-              )}
             </div>
           ) : (
             <div style={{ flex: 1 }} />
@@ -371,8 +300,6 @@ export default function App() {
             onClick={() =>
               setPageIdx((p) => Math.min(EPISODE.pages.length - 1, p + 1))
             }
-            aria-label="Next page"
-            title="Next"
           >
             ▶
           </button>
