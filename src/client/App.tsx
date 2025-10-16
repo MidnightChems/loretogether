@@ -33,7 +33,15 @@ const EPISODE: Episode = testStory;
 async function fetchVotes(pollId: string): Promise<Record<string, number>> {
   const res = await fetch(`/api/votes/${pollId}`);
   const data = await res.json();
-  return data.counts || {};
+  const counts = data.counts || {};
+  
+  // Normalize all values to numbers
+  const numericCounts: Record<string, number> = {};
+  Object.entries(counts).forEach(([key, val]) => {
+    numericCounts[key] = Number(val) || 0;
+  });
+
+  return numericCounts;
 }
 
 async function submitVote(pollId: string, option: string): Promise<void> {
