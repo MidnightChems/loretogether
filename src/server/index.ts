@@ -138,21 +138,33 @@ router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
   }
 });
 
-router.post('/api/vote', async (req, res): Promise<void> => {
+router.post('/api/vote', async (req, res) => {
   const { pollId, option } = req.body;
   if (!pollId || !option) {
-    res.status(400).json({ error: 'pollId and option are required' });
+    res.status(400).json({ error: 'pollId, option are required' });
     return;
   }
 
   try {
-    const key = `poll:${pollId}`;
-    await redis.hIncrBy(key, option, 1);
-    const counts = await redis.hGetAll(key);
-    res.json({ pollId, counts });
+    const username = reddit.getCurrentUsername();
+    if (!username) return res.status(401).json({ error: 'Auth required' });
+
+    const usernameKey = `poll:${pollId}:voter:${username}`;
+    const voteKey = `poll:${pollId}:votes`;
+
+    const alreadyVoted = await redis.exists(usernameKey);
+    if (alreadyVoted) {
+      return res.status(403).json({ error: 'User already voted' });
+    }
+
+    await redis.hIncrBy(voteKey, option, 1);
+    await redis.set(usernameKey, '1');
+
+    res.json({ success: true });    
+
   } catch (err) {
-    console.error('Error submitting vote:', err);
-    res.status(500).json({ error: 'Failed to submit vote' });
+    console.error('vote error', err);
+    res.status(500).json({ error: 'server error' });
   }
 });
 
