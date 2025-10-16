@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { showToast } from '@devvit/web/client';
 
 /** ---------- Types ---------- */
 type PersonalOption = { id: string; text: string };
@@ -44,8 +45,8 @@ async function fetchVotes(pollId: string): Promise<Record<string, number>> {
   return numericCounts;
 }
 
-async function submitVote(pollId: string, option: string): Promise<void> {
-  await fetch(`/api/vote`, {
+async function submitVote(pollId: string, option: string): Promise<Response> {
+  return fetch(`/api/vote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ pollId, option }),
@@ -129,9 +130,17 @@ export default function App() {
     setHasVoted(true);
     setPollSel(option);
     setPollCounts((prev) => ({ ...prev, [option]: (prev[option] ?? 0) + 1 }));
+
     try {
-      await submitVote(EPISODE.poll.id, option);
+      const res = await submitVote(EPISODE.poll.id, option);
+
+      if (res.status === 403) {
+        showToast("You've already voted on this story post.");
+        setHasVoted(false);
+      }
+
     } catch (e) {
+      setHasVoted(false);
       console.error(e);
     }
   }
