@@ -29,13 +29,19 @@ import { testStory } from "./stories/testStory";
 const EPISODE: Episode = testStory;
 
 
-/** ---------- Mock API hooks ---------- */
-async function fetchVotes(pollId: string): Promise<Record<string, number> | null> {
-  void pollId;
-  return null;
+/** ---------- API hooks ---------- */
+async function fetchVotes(pollId: string): Promise<Record<string, number>> {
+  const res = await fetch(`/api/votes/${pollId}`);
+  const data = await res.json();
+  return data.counts || {};
 }
+
 async function submitVote(pollId: string, option: string): Promise<void> {
-  console.log("submitVote", pollId, option);
+  await fetch(`/api/vote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pollId, option }),
+  });
 }
 
 /** ---------- App ---------- */
@@ -59,11 +65,24 @@ export default function App() {
   }, [personal]);
 
   // Poll setup
+  // Poll setup: load from Redis
   useEffect(() => {
-    const zeros: Record<string, number> = {};
-    EPISODE.poll.options.forEach((opt) => (zeros[opt] = 0));
-    setPollCounts(zeros);
+    async function initPoll() {
+      const zeros: Record<string, number> = {};
+      EPISODE.poll.options.forEach((opt) => (zeros[opt] = 0));
+      setPollCounts(zeros);
+
+      try {
+        const counts = await fetchVotes(EPISODE.poll.id);
+        setPollCounts((prev) => ({ ...prev, ...counts }));
+      } catch (err) {
+        console.error("Error fetching votes:", err);
+      }
+    }
+
+    initPoll();
   }, []);
+
 
   const totalVotes = useMemo(
     () => Object.values(pollCounts).reduce((a, b) => a + b, 0),

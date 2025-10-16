@@ -32,5 +32,8 @@
   },
   "dev": {
     "subreddit": "loretogether_dev"
+  },
+  "permissions": {
+    "redis": true
   }
 }

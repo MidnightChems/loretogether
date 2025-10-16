@@ -124,6 +124,38 @@ router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
   }
 });
 
+// --- Poll endpoints ---
+
+router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
+  const pollId = req.params.pollId;
+  try {
+    const key = `poll:${pollId}`;
+    const counts = await redis.hGetAll(key);
+    res.json({ pollId, counts });
+  } catch (err) {
+    console.error('Error fetching votes:', err);
+    res.status(500).json({ error: 'Failed to fetch votes' });
+  }
+});
+
+router.post('/api/vote', async (req, res): Promise<void> => {
+  const { pollId, option } = req.body;
+  if (!pollId || !option) {
+    res.status(400).json({ error: 'pollId and option are required' });
+    return;
+  }
+
+  try {
+    const key = `poll:${pollId}`;
+    await redis.hIncrBy(key, option, 1);
+    const counts = await redis.hGetAll(key);
+    res.json({ pollId, counts });
+  } catch (err) {
+    console.error('Error submitting vote:', err);
+    res.status(500).json({ error: 'Failed to submit vote' });
+  }
+});
+
 // Use router middleware
 app.use(router);
 
