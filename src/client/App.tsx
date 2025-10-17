@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from '@devvit/web/client';
+import { createStoryForm } from "./forms/createStoryForm";
 
 /** ---------- Types ---------- */
 type PersonalOption = { id: string; text: string };
@@ -226,6 +227,34 @@ export default function App() {
                   </div>
                 );
               })}
+
+            {atEnd && (
+            <button
+              style={{
+                marginTop: 16,
+                backgroundColor: theme.accent,
+                color: "white",
+                padding: "10px 16px",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 600,
+                width: "100%",
+              }}
+              onClick={async () => {
+                try {
+                  await createStoryForm();
+                } catch (err) {
+                  console.error("Error creating story:", err);
+                  showToast("Error creating story. Please try again.");
+                }
+              }}
+            >
+              ✏️ Create Your Own Story
+            </button>
+          )}
+    
+
             </div>
           ) : (
             <div style={{ flex: 1 }} />
