@@ -160,12 +160,15 @@ router.post('/api/vote', async (req, res) => {
     await redis.hIncrBy(voteKey, option, 1);
     await redis.set(usernameKey, '1');
 
-    res.json({ success: true });    
-
+    res.json({ success: true });
   } catch (err) {
     console.error('vote error', err);
     res.status(500).json({ error: 'server error' });
   }
+});
+
+router.post('/api/create', async (req, res) => {
+  //finish setting up the create API here
 });
 
 // Use router middleware

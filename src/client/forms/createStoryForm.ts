@@ -6,9 +6,9 @@ export async function createStoryForm() {
       title: 'Create a Story',
       fields: [
         {
-            type: 'string',
-            name: 'story_name',
-            label: 'Story Name'
+          type: 'string',
+          name: 'story_name',
+          label: 'Story Name',
         },
         {
           type: 'paragraph',
@@ -25,11 +25,8 @@ export async function createStoryForm() {
 
     console.log('User entered story:', result);
 
-   //submit formdata to API
-    
+    //submit formdata to API
   } catch (err) {
     console.error('Error showing form:', err);
   }
-
-  
 }
