@@ -167,8 +167,34 @@ router.post('/api/vote', async (req, res) => {
   }
 });
 
-router.post('/api/create', async (req, res) => {
-  //finish setting up the create API here
+router.post('/api/create-story', async (req, res) => {
+  const { subredditName } = context;
+  if (!subredditName) {
+    res.status(400).json({ status: 'error', message: 'subredditName is required' });
+    return;
+  }
+
+  const { story_name, series, chapter, page_1_story } = req.body.values;
+
+  await reddit.submitCustomPost({
+    runAs: 'USER',
+    subredditName: subredditName,
+    title: story_name,
+    splash: {
+      appDisplayName: 'LoreTogether ' + story_name,
+    },
+    postData: {
+      story_name: story_name,
+      series: series,
+      chapter: chapter,
+      page_1_story: page_1_story,
+    },
+    userGeneratedContent: {
+      text: "",
+  },
+  });
+
+  res.json({ status: 'success', message: `Story post created in subreddit ${subredditName}` });
 });
 
 // Use router middleware

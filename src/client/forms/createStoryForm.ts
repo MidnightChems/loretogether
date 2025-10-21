@@ -15,6 +15,16 @@ export async function createStoryForm() {
           name: 'page_1_story',
           label: 'Page 1 Story Content',
         },
+        {
+          type: 'string',
+          name: 'series',
+          label: 'Series',
+        },
+        {
+          type: 'number',
+          name: 'chapter',
+          label: 'Chapter #',
+        }
       ],
     });
 
@@ -26,6 +36,10 @@ export async function createStoryForm() {
     console.log('User entered story:', result);
 
     //submit formdata to API
+    await fetch('api/create-story', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result) });
   } catch (err) {
     console.error('Error showing form:', err);
   }

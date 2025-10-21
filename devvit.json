@@ -34,6 +34,11 @@
     "subreddit": "loretogether_dev"
   },
   "permissions": {
-    "redis": true
+    "redis": true,
+    "reddit": {
+      "asUser": [
+        "SUBMIT_POST"
+      ]
+    }
   }
 }
