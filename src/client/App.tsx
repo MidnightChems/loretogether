@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { showToast } from '@devvit/web/client';
+import { showToast, context } from '@devvit/web/client';
 import { createStoryForm } from './forms/createStoryForm';
 
 /** ---------- Types ---------- */
@@ -13,13 +13,71 @@ type Episode = {
   series: string;
   chapter: number;
   pages: Page[];
-  poll: Poll;
+  poll: Poll | null;
 };
 
 import { theme, wrap, card, hdr, storyText, navRow, circleBtn, choiceBtn } from './styles/theme';
 
 import { testStory } from './stories/testStory';
-const EPISODE: Episode = testStory;
+
+const EPISODE = getCurrentStory(context) || testStory ;
+
+
+function getCurrentStory(context: any) {
+  if (context?.postData) {
+    const data = context.postData;
+
+    if (!data.story_name && !data[`page_1_story`]) {
+      return null; // No valid story data, will fall back to testStory
+    }
+
+    const pages: any[] = [];
+
+    // Handle dynamic pages (page_1_story, page_2_story, ...)
+    let pageIndex = 1;
+    while (data[`page_${pageIndex}_story`]) {
+      const page: any = {
+        id: `p${pageIndex}`,
+        text: data[`page_${pageIndex}_story`],
+      };
+
+      // Optional personal choice data for each page
+      if (data[`page_${pageIndex}_pc_id`]) {
+        page.personalChoice = {
+          id: data[`page_${pageIndex}_pc_id`],
+          prompt: data[`page_${pageIndex}_pc_prompt`] || '',
+          options: JSON.parse(data[`page_${pageIndex}_pc_options`] || '[]'),
+        };
+      }
+
+      pages.push(page);
+      pageIndex++;
+    }
+
+    // Optional poll data
+    const poll = data.poll_question
+      ? {
+          id: data.poll_id || 'poll-final',
+          question: data.poll_question,
+          options: Array.isArray(data.poll_options)
+            ? data.poll_options
+            : JSON.parse(data.poll_options || '[]'),
+        }
+      : null;
+
+    return {
+      id: data.id || 'ugc-ep1',
+      title: data.story_name || 'Untitled Story',
+      series: data.series || 'Standalone',
+      chapter: data.chapter || 1,
+      pages,
+      poll,
+    };
+  }
+
+  return testStory;
+}
+
 
 /** ---------- API hooks ---------- */
 async function fetchVotes(pollId: string): Promise<Record<string, number>> {
@@ -68,8 +126,12 @@ export default function App() {
   // Poll setup: load from Redis
   useEffect(() => {
     async function initPoll() {
+      if (!EPISODE.poll) {
+        return
+      }
+
       const zeros: Record<string, number> = {};
-      EPISODE.poll.options.forEach((opt) => (zeros[opt] = 0));
+      EPISODE.poll.options.forEach((opt: string) => (zeros[opt] = 0));
       setPollCounts(zeros);
 
       try {
@@ -99,7 +161,7 @@ export default function App() {
     const matches = text.match(/{{(.*?)}}/g);
     if (!matches) return text;
 
-    matches.forEach((token) => {
+    matches.forEach((token: string) => {
       const key = token.replace(/[{}]/g, ''); // remove curly braces
       const val = personal[key];
       if (val) {
@@ -116,6 +178,7 @@ export default function App() {
 
   async function onPollVote(option: string) {
     if (hasVoted) return;
+    if (!EPISODE.poll) return;
     setHasVoted(true);
     setPollSel(option);
     setPollCounts((prev) => ({ ...prev, [option]: (prev[option] ?? 0) + 1 }));
@@ -152,7 +215,7 @@ export default function App() {
             <div style={{ fontSize: 14, color: theme.subtle, marginBottom: 6 }}>
               {currentPage.personalChoice.prompt}
             </div>
-            {currentPage.personalChoice.options.map((opt) => {
+            {currentPage.personalChoice.options.map((opt: PersonalOption) => {
               const active = personal[currentPage.personalChoice!.id] === opt.id;
               return (
                 <button
@@ -179,8 +242,8 @@ export default function App() {
 
           {atEnd ? (
             <div style={{ flex: 1, margin: '0 12px' }}>
-              <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll.question}</div>
-              {EPISODE.poll.options.map((opt) => {
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll?.question}</div>
+              {EPISODE.poll?.options.map((opt: string) => {
                 const count = pollCounts[opt] ?? 0;
                 const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
                 const selected = pollSel === opt;
