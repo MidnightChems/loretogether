@@ -66,10 +66,10 @@ function getCurrentStory(context: any) {
       : null;
 
     return {
-      id: data.id || 'ugc-ep1',
-      title: data.story_name || 'Untitled Story',
-      series: data.series || 'Standalone',
-      chapter: data.chapter || 1,
+      id: data.id,
+      title: data.story_name,
+      series: data.series,
+      chapter: data.chapter,
       pages,
       poll,
     };
