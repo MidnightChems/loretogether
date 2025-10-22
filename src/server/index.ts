@@ -174,7 +174,7 @@ router.post('/api/create-story', async (req, res) => {
     return;
   }
 
-  const { story_name, series, chapter, page_1_story } = req.body.values;
+  const { story_name, series, chapter, page_1_story, page_2_story } = req.body.values;
 
   await reddit.submitCustomPost({
     runAs: 'USER',
@@ -188,6 +188,7 @@ router.post('/api/create-story', async (req, res) => {
       series: series,
       chapter: chapter,
       page_1_story: page_1_story,
+      page_2_story: page_2_story,
     },
     userGeneratedContent: {
       text: "",

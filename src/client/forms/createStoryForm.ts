@@ -11,11 +11,6 @@ export async function createStoryForm() {
           label: 'Story Name',
         },
         {
-          type: 'paragraph',
-          name: 'page_1_story',
-          label: 'Page 1 Story Content',
-        },
-        {
           type: 'string',
           name: 'series',
           label: 'Series',
@@ -24,6 +19,16 @@ export async function createStoryForm() {
           type: 'number',
           name: 'chapter',
           label: 'Chapter #',
+        },
+        {
+          type: 'paragraph',
+          name: 'page_1_story',
+          label: 'Page 1 Story Content',
+        },
+        {
+          type: 'paragraph',
+          name: 'page_2_story',
+          label: 'Page 2 Story Content',
         }
       ],
     });

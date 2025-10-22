@@ -35,6 +35,8 @@ function getCurrentStory(context: any) {
 
     // Handle dynamic pages (page_1_story, page_2_story, ...)
     let pageIndex = 1;
+    console.log('postData keys:', Object.keys(data));
+
     while (data[`page_${pageIndex}_story`]) {
       const page: any = {
         id: `p${pageIndex}`,
@@ -242,6 +244,9 @@ export default function App() {
 
           {atEnd ? (
             <div style={{ flex: 1, margin: '0 12px' }}>
+              {EPISODE.poll ? (
+                <>
+
               <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll?.question}</div>
               {EPISODE.poll?.options.map((opt: string) => {
                 const count = pollCounts[opt] ?? 0;
@@ -273,6 +278,11 @@ export default function App() {
                   </div>
                 );
               })}
+              
+              </>
+            ) : (
+              <div style={{ fontSize: 14, color: theme.subtle }}>No poll for this story</div>
+            )}
 
               {atEnd && (
                 <button
