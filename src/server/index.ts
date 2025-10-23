@@ -174,7 +174,15 @@ router.post('/api/create-story', async (req, res) => {
     return;
   }
 
-  const { story_name, series, chapter, page_1_story, page_2_story } = req.body.values;
+  const { 
+    story_name,
+    series, chapter,
+    page_1_story,
+    page_2_story,
+    page_3_story,
+    poll_question,
+    poll_options,  
+  } = req.body.values;
 
   await reddit.submitCustomPost({
     runAs: 'USER',
@@ -189,6 +197,9 @@ router.post('/api/create-story', async (req, res) => {
       chapter: chapter,
       page_1_story: page_1_story,
       page_2_story: page_2_story,
+      page_3_story: page_3_story,
+      poll_question: poll_question,
+      poll_options: poll_options,
     },
     userGeneratedContent: {
       text: "",

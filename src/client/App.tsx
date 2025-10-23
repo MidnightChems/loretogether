@@ -59,13 +59,17 @@ function getCurrentStory(context: any) {
     // Optional poll data
     const poll = data.poll_question
       ? {
-          id: data.poll_id || 'poll-final',
+          // Use the post_id if available, otherwise fallback to data.poll_id or a default
+          id: data.post_id
+            ? `poll-${data.post_id}`
+            : data.poll_id || 'poll-final',
           question: data.poll_question,
           options: Array.isArray(data.poll_options)
             ? data.poll_options
             : JSON.parse(data.poll_options || '[]'),
         }
       : null;
+
 
     return {
       id: data.id,
