@@ -2,6 +2,7 @@ import express from 'express';
 import { InitResponse, IncrementResponse, DecrementResponse } from '../shared/types/api';
 import { redis, reddit, createServer, context, getServerPort } from '@devvit/web/server';
 import { createPost } from './core/post';
+import crypto from 'crypto';
 
 const app = express();
 
@@ -129,7 +130,7 @@ router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
 router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
   const pollId = req.params.pollId;
   try {
-    const key = `poll:${pollId}`;
+    const key = `poll:${pollId}:votes`;
     const counts = await redis.hGetAll(key);
     res.json({ pollId, counts });
   } catch (err) {
@@ -140,6 +141,7 @@ router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
 
 router.post('/api/vote', async (req, res) => {
   const { pollId, option } = req.body;
+  console.log("Server Poll ID:", pollId);
   if (!pollId || !option) {
     res.status(400).json({ error: 'pollId, option are required' });
     return;
@@ -184,6 +186,8 @@ router.post('/api/create-story', async (req, res) => {
     poll_options,  
   } = req.body.values;
 
+  const poll_id = `poll-${crypto.randomUUID()}`;
+
   await reddit.submitCustomPost({
     runAs: 'USER',
     subredditName: subredditName,
@@ -200,6 +204,7 @@ router.post('/api/create-story', async (req, res) => {
       page_3_story: page_3_story,
       poll_question: poll_question,
       poll_options: poll_options,
+      poll_id: poll_id,
     },
     userGeneratedContent: {
       text: "",

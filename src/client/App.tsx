@@ -20,8 +20,7 @@ import { theme, wrap, card, hdr, storyText, navRow, circleBtn, choiceBtn } from 
 
 import { testStory } from './stories/testStory';
 
-const EPISODE = getCurrentStory(context) || testStory ;
-
+const EPISODE = getCurrentStory(context) || testStory;
 
 function getCurrentStory(context: any) {
   if (context?.postData) {
@@ -56,20 +55,15 @@ function getCurrentStory(context: any) {
       pageIndex++;
     }
 
-    // Optional poll data
     const poll = data.poll_question
       ? {
-          // Use the post_id if available, otherwise fallback to data.poll_id or a default
-          id: data.post_id
-            ? `poll-${data.post_id}`
-            : data.poll_id || 'poll-final',
+          id: data.poll_id,
           question: data.poll_question,
           options: Array.isArray(data.poll_options)
             ? data.poll_options
             : JSON.parse(data.poll_options || '[]'),
         }
       : null;
-
 
     return {
       id: data.id,
@@ -84,9 +78,9 @@ function getCurrentStory(context: any) {
   return testStory;
 }
 
-
 /** ---------- API hooks ---------- */
 async function fetchVotes(pollId: string): Promise<Record<string, number>> {
+  console.log('fetchVotes -> pollId:', pollId);
   const res = await fetch(`/api/votes/${pollId}`);
   const data = await res.json();
   const counts = data.counts || {};
@@ -101,6 +95,7 @@ async function fetchVotes(pollId: string): Promise<Record<string, number>> {
 }
 
 async function submitVote(pollId: string, option: string): Promise<Response> {
+  console.log("Submitting vote for poll ID:", pollId, "option:", option);
   return fetch(`/api/vote`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -133,7 +128,7 @@ export default function App() {
   useEffect(() => {
     async function initPoll() {
       if (!EPISODE.poll) {
-        return
+        return;
       }
 
       const zeros: Record<string, number> = {};
@@ -185,22 +180,36 @@ export default function App() {
   async function onPollVote(option: string) {
     if (hasVoted) return;
     if (!EPISODE.poll) return;
+
+    console.log('Client Poll ID', EPISODE.poll.id);
     setHasVoted(true);
     setPollSel(option);
-    setPollCounts((prev) => ({ ...prev, [option]: (prev[option] ?? 0) + 1 }));
 
     try {
       const res = await submitVote(EPISODE.poll.id, option);
 
       if (res.status === 403) {
         showToast("You've already voted on this story post.");
-        setHasVoted(false);
+        setHasVoted(true); // lock out revoting
+        return;
       }
+
+      if (!res.ok) {
+        throw new Error(`Vote failed: ${res.status}`);
+      }
+
+      setPollCounts((prev) => ({
+        ...prev,
+        [option]: (prev[option] ?? 0) + 1,
+      }));
+
     } catch (e) {
-      setHasVoted(false);
       console.error(e);
+      setHasVoted(false); 
+      showToast("Vote failed. Please try again.");
     }
   }
+
 
   return (
     <div style={wrap}>
@@ -250,43 +259,41 @@ export default function App() {
             <div style={{ flex: 1, margin: '0 12px' }}>
               {EPISODE.poll ? (
                 <>
-
-              <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll?.question}</div>
-              {EPISODE.poll?.options.map((opt: string) => {
-                const count = pollCounts[opt] ?? 0;
-                const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
-                const selected = pollSel === opt;
-                return (
-                  <div key={opt} style={{ marginTop: 8 }}>
-                    <button
-                      onClick={() => onPollVote(opt)}
-                      disabled={hasVoted}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '10px 12px',
-                        borderRadius: 8,
-                        border: `1px solid ${selected ? theme.accent : theme.border}`,
-                        background: selected ? 'rgba(255,69,0,0.15)' : '#1c1c1e',
-                        color: theme.text,
-                        cursor: hasVoted ? 'default' : 'pointer',
-                      }}
-                    >
-                      {opt}
-                    </button>
-                    {hasVoted && (
-                      <div style={{ marginTop: 6, fontSize: 12, color: theme.subtle }}>
-                        {pct}% ({count} vote{count === 1 ? '' : 's'})
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll?.question}</div>
+                  {EPISODE.poll?.options.map((opt: string) => {
+                    const count = pollCounts[opt] ?? 0;
+                    const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
+                    const selected = pollSel === opt;
+                    return (
+                      <div key={opt} style={{ marginTop: 8 }}>
+                        <button
+                          onClick={() => onPollVote(opt)}
+                          disabled={hasVoted}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '10px 12px',
+                            borderRadius: 8,
+                            border: `1px solid ${selected ? theme.accent : theme.border}`,
+                            background: selected ? 'rgba(255,69,0,0.15)' : '#1c1c1e',
+                            color: theme.text,
+                            cursor: hasVoted ? 'default' : 'pointer',
+                          }}
+                        >
+                          {opt}
+                        </button>
+                        {hasVoted && (
+                          <div style={{ marginTop: 6, fontSize: 12, color: theme.subtle }}>
+                            {pct}% ({count} vote{count === 1 ? '' : 's'})
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-              
-              </>
-            ) : (
-              <div style={{ fontSize: 14, color: theme.subtle }}>No poll for this story</div>
-            )}
+                    );
+                  })}
+                </>
+              ) : (
+                <div style={{ fontSize: 14, color: theme.subtle }}>No poll for this story</div>
+              )}
 
               {atEnd && (
                 <button
