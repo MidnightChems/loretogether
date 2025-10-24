@@ -2,6 +2,7 @@ import express from 'express';
 import { InitResponse, IncrementResponse, DecrementResponse } from '../shared/types/api';
 import { redis, reddit, createServer, context, getServerPort } from '@devvit/web/server';
 import { createPost } from './core/post';
+import crypto from 'crypto';
 
 const app = express();
 
@@ -129,7 +130,7 @@ router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
 router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
   const pollId = req.params.pollId;
   try {
-    const key = `poll:${pollId}`;
+    const key = `poll:${pollId}:votes`;
     const counts = await redis.hGetAll(key);
     res.json({ pollId, counts });
   } catch (err) {
@@ -140,6 +141,7 @@ router.get('/api/votes/:pollId', async (req, res): Promise<void> => {
 
 router.post('/api/vote', async (req, res) => {
   const { pollId, option } = req.body;
+  console.log("Server Poll ID:", pollId);
   if (!pollId || !option) {
     res.status(400).json({ error: 'pollId, option are required' });
     return;
@@ -160,12 +162,56 @@ router.post('/api/vote', async (req, res) => {
     await redis.hIncrBy(voteKey, option, 1);
     await redis.set(usernameKey, '1');
 
-    res.json({ success: true });    
-
+    res.json({ success: true });
   } catch (err) {
     console.error('vote error', err);
     res.status(500).json({ error: 'server error' });
   }
+});
+
+router.post('/api/create-story', async (req, res) => {
+  const { subredditName } = context;
+  if (!subredditName) {
+    res.status(400).json({ status: 'error', message: 'subredditName is required' });
+    return;
+  }
+
+  const { 
+    story_name,
+    series, chapter,
+    page_1_story,
+    page_2_story,
+    page_3_story,
+    poll_question,
+    poll_options,  
+  } = req.body.values;
+
+  const poll_id = `poll-${crypto.randomUUID()}`;
+
+  await reddit.submitCustomPost({
+    runAs: 'USER',
+    subredditName: subredditName,
+    title: story_name,
+    splash: {
+      appDisplayName: 'LoreTogether ' + story_name,
+    },
+    postData: {
+      story_name: story_name,
+      series: series,
+      chapter: chapter,
+      page_1_story: page_1_story,
+      page_2_story: page_2_story,
+      page_3_story: page_3_story,
+      poll_question: poll_question,
+      poll_options: poll_options,
+      poll_id: poll_id,
+    },
+    userGeneratedContent: {
+      text: "",
+  },
+  });
+
+  res.json({ status: 'success', message: `Story post created in subreddit ${subredditName}` });
 });
 
 // Use router middleware
