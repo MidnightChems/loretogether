@@ -6,14 +6,29 @@ export async function createStoryForm() {
     const basicInfoResult = await showForm({
       title: 'Create a Story - Basic Information',
       fields: [
-        { type: 'string', name: 'story_name', label: 'Story Name' },
-        { type: 'string', name: 'series', label: 'Series' },
-        { type: 'number', name: 'chapter', label: 'Chapter #' },
+        {
+          type: 'string',
+          name: 'story_name',
+          label: 'Story Name',
+          helpText: 'Required - Give your story a title',
+        },
+        {
+          type: 'string',
+          name: 'series',
+          label: 'Series',
+          helpText: 'Required - What series does this story belong to?',
+        },
+        {
+          type: 'number',
+          name: 'chapter',
+          label: 'Chapter #',
+          helpText: 'Required - Chapter number (must be 1 or greater)',
+        },
         {
           type: 'number',
           name: 'page_count',
           label: 'Number of Pages',
-          helpText: 'How many pages will your story have? (1-10)',
+          helpText: 'Required - How many pages will your story have? (1-10)',
         },
       ],
     });
@@ -23,7 +38,25 @@ export async function createStoryForm() {
       return;
     }
 
+    // Validate required fields
+    if (!basicInfoResult.values.story_name || !basicInfoResult.values.story_name.trim()) {
+      alert('Please enter a story name');
+      return;
+    }
+
+    if (!basicInfoResult.values.series || !basicInfoResult.values.series.trim()) {
+      alert('Please enter a series name');
+      return;
+    }
+
     const pageCount = Number(basicInfoResult.values.page_count);
+    const chapterNumber = Number(basicInfoResult.values.chapter);
+
+    // Validate chapter number
+    if (!chapterNumber || chapterNumber < 1) {
+      alert('Please enter a valid chapter number (must be 1 or greater)');
+      return;
+    }
 
     // Validate page count
     if (!pageCount || pageCount < 1 || pageCount > 10) {

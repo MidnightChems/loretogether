@@ -185,7 +185,34 @@ router.post('/api/create-story', async (req, res) => {
     poll_options,
   } = req.body.values;
 
+  // Validate required fields
+  if (!story_name || !story_name.trim()) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Story name is required' 
+    });
+    return;
+  }
+
+  if (!series || !series.trim()) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Series name is required' 
+    });
+    return;
+  }
+
   const pageCount = Number(page_count) || 3; // Default to 3 if not provided for backward compatibility
+  const chapterNumber = Number(chapter);
+  
+  // Validate chapter number
+  if (!chapterNumber || chapterNumber < 1) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Chapter number must be 1 or greater' 
+    });
+    return;
+  }
   
   // Validate page count
   if (pageCount < 1 || pageCount > 10) {
