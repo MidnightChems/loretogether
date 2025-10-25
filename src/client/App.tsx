@@ -173,8 +173,8 @@ export default function App() {
     return text;
   }, [currentPage.text, personal]);
 
-  function onPickPersonal(choiceId: string, optionId: string) {
-    setPersonal((prev) => ({ ...prev, [choiceId]: optionId }));
+  function onPickPersonal(choiceId: string, optionText: string) {
+    setPersonal((prev) => ({ ...prev, [choiceId]: optionText }));
   }
 
   async function onPollVote(option: string) {
@@ -231,11 +231,11 @@ export default function App() {
               {currentPage.personalChoice.prompt}
             </div>
             {currentPage.personalChoice.options.map((opt: PersonalOption) => {
-              const active = personal[currentPage.personalChoice!.id] === opt.id;
+              const active = personal[currentPage.personalChoice!.id] === opt.text;
               return (
                 <button
                   key={opt.id}
-                  onClick={() => onPickPersonal(currentPage.personalChoice!.id, opt.id)}
+                  onClick={() => onPickPersonal(currentPage.personalChoice!.id, opt.text)}
                   style={choiceBtn(active)}
                 >
                   {opt.text}

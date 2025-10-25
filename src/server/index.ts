@@ -183,10 +183,95 @@ router.post('/api/create-story', async (req, res) => {
     page_2_story,
     page_3_story,
     poll_question,
-    poll_options,  
+    poll_options,
+    // Personal choice fields for each page
+    page_1_pc_id,
+    page_1_pc_prompt,
+    page_1_pc_options,
+    page_2_pc_id,
+    page_2_pc_prompt,
+    page_2_pc_options,
+    page_3_pc_id,
+    page_3_pc_prompt,
+    page_3_pc_options,
   } = req.body.values;
 
+  // Validate personal choice data structure
+  const validationErrors: string[] = [];
+  
+  for (let pageNum = 1; pageNum <= 3; pageNum++) {
+    const pcId = req.body.values[`page_${pageNum}_pc_id`];
+    const pcPrompt = req.body.values[`page_${pageNum}_pc_prompt`];
+    const pcOptions = req.body.values[`page_${pageNum}_pc_options`];
+    
+    if (pcId || pcPrompt || pcOptions) {
+      // Validate choice ID format
+      if (pcId && !/^[a-zA-Z0-9_]+$/.test(pcId)) {
+        validationErrors.push(`Page ${pageNum}: Invalid choice ID format`);
+      }
+      
+      // Validate JSON structure for options
+      if (pcOptions) {
+        try {
+          const options = JSON.parse(pcOptions);
+          if (!Array.isArray(options) || options.length < 2) {
+            validationErrors.push(`Page ${pageNum}: Personal choice must have at least 2 options`);
+          }
+          
+          // Validate option structure
+          for (const option of options) {
+            if (!option.id || !option.text) {
+              validationErrors.push(`Page ${pageNum}: Invalid option structure`);
+              break;
+            }
+          }
+        } catch (e) {
+          validationErrors.push(`Page ${pageNum}: Invalid personal choice options JSON`);
+        }
+      }
+    }
+  }
+  
+  if (validationErrors.length > 0) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Personal choice validation failed',
+      errors: validationErrors 
+    });
+    return;
+  }
+
   const poll_id = `poll-${crypto.randomUUID()}`;
+
+  // Build postData with personal choice fields
+  const postData: any = {
+    story_name: story_name,
+    series: series,
+    chapter: chapter,
+    page_1_story: page_1_story,
+    page_2_story: page_2_story,
+    page_3_story: page_3_story,
+    poll_question: poll_question,
+    poll_options: poll_options,
+    poll_id: poll_id,
+  };
+  
+  // Add personal choice data if present
+  if (page_1_pc_id) {
+    postData.page_1_pc_id = page_1_pc_id;
+    postData.page_1_pc_prompt = page_1_pc_prompt;
+    postData.page_1_pc_options = page_1_pc_options;
+  }
+  if (page_2_pc_id) {
+    postData.page_2_pc_id = page_2_pc_id;
+    postData.page_2_pc_prompt = page_2_pc_prompt;
+    postData.page_2_pc_options = page_2_pc_options;
+  }
+  if (page_3_pc_id) {
+    postData.page_3_pc_id = page_3_pc_id;
+    postData.page_3_pc_prompt = page_3_pc_prompt;
+    postData.page_3_pc_options = page_3_pc_options;
+  }
 
   await reddit.submitCustomPost({
     runAs: 'USER',
@@ -195,17 +280,7 @@ router.post('/api/create-story', async (req, res) => {
     splash: {
       appDisplayName: 'LoreTogether ' + story_name,
     },
-    postData: {
-      story_name: story_name,
-      series: series,
-      chapter: chapter,
-      page_1_story: page_1_story,
-      page_2_story: page_2_story,
-      page_3_story: page_3_story,
-      poll_question: poll_question,
-      poll_options: poll_options,
-      poll_id: poll_id,
-    },
+    postData,
     userGeneratedContent: {
       text: "",
   },
