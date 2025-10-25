@@ -178,28 +178,67 @@ router.post('/api/create-story', async (req, res) => {
 
   const { 
     story_name,
-    series, chapter,
-    page_1_story,
-    page_2_story,
-    page_3_story,
+    series, 
+    chapter,
+    page_count,
     poll_question,
     poll_options,
-    // Personal choice fields for each page
-    page_1_pc_id,
-    page_1_pc_prompt,
-    page_1_pc_options,
-    page_2_pc_id,
-    page_2_pc_prompt,
-    page_2_pc_options,
-    page_3_pc_id,
-    page_3_pc_prompt,
-    page_3_pc_options,
   } = req.body.values;
+
+  // Validate required fields
+  if (!story_name || !story_name.trim()) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Story name is required' 
+    });
+    return;
+  }
+
+  if (!series || !series.trim()) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Series name is required' 
+    });
+    return;
+  }
+
+  const pageCount = Number(page_count) || 3; // Default to 3 if not provided for backward compatibility
+  const chapterNumber = Number(chapter);
+  
+  // Validate chapter number
+  if (!chapterNumber || chapterNumber < 1) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Chapter number must be 1 or greater' 
+    });
+    return;
+  }
+  
+  // Validate page count
+  if (pageCount < 1 || pageCount > 10) {
+    res.status(400).json({ 
+      status: 'error', 
+      message: 'Page count must be between 1 and 10' 
+    });
+    return;
+  }
+
+  // Validate page content is provided for all pages
+  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+    const pageContent = req.body.values[`page_${pageNum}_story`];
+    if (!pageContent || !pageContent.trim()) {
+      res.status(400).json({ 
+        status: 'error', 
+        message: `Page ${pageNum} content is required` 
+      });
+      return;
+    }
+  }
 
   // Validate personal choice data structure
   const validationErrors: string[] = [];
   
-  for (let pageNum = 1; pageNum <= 3; pageNum++) {
+  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
     const pcId = req.body.values[`page_${pageNum}_pc_id`];
     const pcPrompt = req.body.values[`page_${pageNum}_pc_prompt`];
     const pcOptions = req.body.values[`page_${pageNum}_pc_options`];
@@ -243,34 +282,35 @@ router.post('/api/create-story', async (req, res) => {
 
   const poll_id = `poll-${crypto.randomUUID()}`;
 
-  // Build postData with personal choice fields
+  // Build postData with dynamic page fields
   const postData: any = {
     story_name: story_name,
     series: series,
     chapter: chapter,
-    page_1_story: page_1_story,
-    page_2_story: page_2_story,
-    page_3_story: page_3_story,
+    page_count: pageCount,
     poll_question: poll_question,
     poll_options: poll_options,
     poll_id: poll_id,
   };
   
-  // Add personal choice data if present
-  if (page_1_pc_id) {
-    postData.page_1_pc_id = page_1_pc_id;
-    postData.page_1_pc_prompt = page_1_pc_prompt;
-    postData.page_1_pc_options = page_1_pc_options;
-  }
-  if (page_2_pc_id) {
-    postData.page_2_pc_id = page_2_pc_id;
-    postData.page_2_pc_prompt = page_2_pc_prompt;
-    postData.page_2_pc_options = page_2_pc_options;
-  }
-  if (page_3_pc_id) {
-    postData.page_3_pc_id = page_3_pc_id;
-    postData.page_3_pc_prompt = page_3_pc_prompt;
-    postData.page_3_pc_options = page_3_pc_options;
+  // Add page story content and personal choice data dynamically
+  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+    const pageStory = req.body.values[`page_${pageNum}_story`];
+    const pcId = req.body.values[`page_${pageNum}_pc_id`];
+    const pcPrompt = req.body.values[`page_${pageNum}_pc_prompt`];
+    const pcOptions = req.body.values[`page_${pageNum}_pc_options`];
+    
+    // Add page story content
+    if (pageStory) {
+      postData[`page_${pageNum}_story`] = pageStory;
+    }
+    
+    // Add personal choice data if present
+    if (pcId) {
+      postData[`page_${pageNum}_pc_id`] = pcId;
+      postData[`page_${pageNum}_pc_prompt`] = pcPrompt;
+      postData[`page_${pageNum}_pc_options`] = pcOptions;
+    }
   }
 
   await reddit.submitCustomPost({
