@@ -1,31 +1,111 @@
-## Devvit React Starter
+# LoreTogether
 
-A starter to build web applications on Reddit's developer platform
+**LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform that allows users to create and experience personalized, choice-driven stories. Readers make decisions throughout the story that dynamically change the narrative, creating a unique experience for each person.
 
-- [Devvit](https://developers.reddit.com/): A way to build and deploy immersive games on Reddit
-- [Vite](https://vite.dev/): For compiling the webView
-- [React](https://react.dev/): For UI
-- [Express](https://expressjs.com/): For backend logic
-- [Tailwind](https://tailwindcss.com/): For styles
-- [Typescript](https://www.typescriptlang.org/): For type safety
+## What Makes LoreTogether Unique
+
+- **Personal Choice System**: Stories include interactive decision points where readers select options (like choosing a character's name, color preferences, or story paths) that get dynamically inserted into later story pages
+- **Dynamic Placeholder Replacement**: Uses `{{variable}}` syntax to reference reader choices throughout the story, making each reading experience personalized
+- **Community Polling**: Stories end with community polls where readers vote on story outcomes, creating engagement and discussion
+- **Reddit Integration**: Built natively on Reddit, allowing for seamless sharing, commenting, and community interaction around stories
+- **Creator-Friendly Forms**: Intuitive story creation interface that doesn't require technical knowledge to build interactive narratives
+- **Session Persistence**: Your personal choices are saved throughout your reading session, allowing you to go back and change decisions
+- **Real-time Poll Results**: See live voting results and percentages as the community participates in story polls
+
+## Technology Stack
+
+- **[Devvit](https://developers.reddit.com/)**: Reddit's developer platform for building immersive apps
+- **[React](https://react.dev/)**: Frontend UI framework
+- **[TypeScript](https://www.typescriptlang.org/)**: Type-safe development
+- **[Express](https://expressjs.com/)**: Backend API server
+- **[Vite](https://vite.dev/)**: Build tool and development server
+- **[Tailwind CSS](https://tailwindcss.com/)**: Styling framework
+- **Redis**: Data persistence for votes and user choices
 
 ## Getting Started
 
-> Make sure you have Node 22 downloaded on your machine before running!
+> **Prerequisites**: Node.js 22+ is required
 
-1. Run `npm create devvit@latest --template=react`
-2. Go through the installation wizard. You will need to create a Reddit account and connect it to Reddit developers
-3. Copy the command on the success page into your terminal
+1. Clone this repository
+2. Run `npm install` to install dependencies
+3. Set up your Devvit development environment:
+   - Create a Reddit account if you don't have one
+   - Visit [Reddit Developers](https://developers.reddit.com/) to set up your developer account
+   - Run `npm run login` to authenticate with Reddit
+4. Start development with `npm run dev`
 
-## Commands
+## How to Play/Use LoreTogether
 
-- `npm run dev`: Starts a development server where you can develop your application live on Reddit.
-- `npm run build`: Builds your client and server projects
-- `npm run deploy`: Uploads a new version of your app
-- `npm run launch`: Publishes your app for review
-- `npm run login`: Logs your CLI into Reddit
-- `npm run check`: Type checks, lints, and prettifies your app
+### For Story Readers
 
-## Cursor Integration
+1. **Open a Story**: Click on any LoreTogether post in a Reddit community
+2. **Click "Launch App"**: This opens the interactive story interface in a webview
+3. **Navigate the Story**: 
+   - Use the left arrow (◀) and right arrow (▶) buttons to move between story pages
+   - The header shows your current progress: "Page X / Y" along with the series name and chapter
+4. **Make Personal Choices**: 
+   - When you encounter a personal choice prompt, you'll see a question with multiple options
+   - Click on any option button to make your selection - selected choices are highlighted in orange
+   - Your choices are automatically saved to your browser session
+5. **Experience Dynamic Storytelling**: 
+   - As you progress, watch your previous choices get inserted into the story text
+   - Placeholders like "{{collar}}" will be replaced with your actual selections (e.g., "blue collar")
+   - You can go back to previous pages to change your choices - the story will update accordingly
+6. **Participate in Community Polls**: 
+   - At the final page, vote in the community poll about story outcomes
+   - Once you vote, you'll see real-time results showing percentages and vote counts
+   - Each Reddit user can only vote once per story
+7. **Create Your Own**: Click the "✏️ Create Your Own Story" button to access the story creation form
 
-This template comes with a pre-configured cursor environment. To get started, [download cursor](https://www.cursor.com/downloads) and enable the `devvit-mcp` when prompted.
+### For Story Creators
+
+1. **Access the Creation Form**: 
+   - Complete a story as a reader, then click "Create Your Own Story"
+   - Or use the moderator menu if you have permissions
+2. **Fill Out Story Details**:
+   - **Story Name**: The title that will appear on Reddit
+   - **Series**: Group related stories together
+   - **Chapter**: Number for story organization
+3. **Write Your Story Pages** (up to 3 pages):
+   - Write your story content in the text areas
+   - Use placeholder syntax like `{{color}}` or `{{name}}` to reference choices made on earlier pages
+4. **Add Personal Choices** (optional for each page):
+   - **Personal Choice Question**: The prompt readers will see (e.g., "What color does Sarah choose?")
+   - **Choice ID**: A unique identifier for placeholders (e.g., "color" for `{{color}}`)
+   - **Choice Options**: 2-3 options readers can select from
+5. **Add End Poll** (optional):
+   - Create a community poll question about the story outcome
+   - Provide 2-3 voting options for readers
+6. **Submit**: Your story gets posted to the Reddit community as an interactive post
+
+### Personal Choice System Example
+
+Here's how the interactive storytelling works using the included test story:
+
+**Page 1**: "John kneeled beside his dog, Scout, before they left the house. Today was the day he'd finally buy a car — and Scout needed a new collar for the big day."
+- *Personal Choice*: "Which collar does John choose for Scout?"
+- *Options*: "Blue — calm and dependable", "Red — bold and full of energy", "Green — adventurous and fresh"
+
+**Page 2**: "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{collar}} collar, tail wagging all the way to the curb."
+
+**Page 3**: "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn't help but notice how the {{collar}} gleamed under the light — maybe it was a sign."
+
+When a reader selects "Blue — calm and dependable" on Page 1, Pages 2 and 3 will display "blue" wherever {{collar}} appears, creating a personalized narrative that reflects their choice.
+
+## Development Commands
+
+- `npm run dev`: Start development server with live Reddit integration
+- `npm run build`: Build client and server for production
+- `npm run deploy`: Upload new version to Reddit
+- `npm run launch`: Publish app for community review
+- `npm run login`: Authenticate with Reddit developers
+- `npm run check`: Run type checking, linting, and formatting
+
+## Development Setup
+
+This project uses a pre-configured development environment. For the best experience:
+
+1. [Download Cursor IDE](https://www.cursor.com/downloads) 
+2. Enable the `devvit-mcp` integration when prompted
+3. Use `npm run dev` to start the development server
+4. Test your changes live on Reddit using the provided playtest URL
