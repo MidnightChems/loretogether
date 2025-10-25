@@ -74,6 +74,7 @@ export async function createStoryForm() {
         type: 'paragraph',
         name: `page_${pageNum}_story`,
         label: `Page ${pageNum} Story Content`,
+        helpText: 'Required - Write the story content for this page',
       });
 
       // Personal choice fields for this page
@@ -132,6 +133,15 @@ export async function createStoryForm() {
     if (result.action === 'CANCELED') {
       console.log('User cancelled the story content form');
       return;
+    }
+
+    // Validate page content is provided for all pages
+    for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+      const pageContent = result.values[`page_${pageNum}_story`];
+      if (!pageContent || !pageContent.trim()) {
+        showToast(`Please enter content for Page ${pageNum}`);
+        return;
+      }
     }
 
     // Validate personal choice data

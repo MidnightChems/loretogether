@@ -223,6 +223,18 @@ router.post('/api/create-story', async (req, res) => {
     return;
   }
 
+  // Validate page content is provided for all pages
+  for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+    const pageContent = req.body.values[`page_${pageNum}_story`];
+    if (!pageContent || !pageContent.trim()) {
+      res.status(400).json({ 
+        status: 'error', 
+        message: `Page ${pageNum} content is required` 
+      });
+      return;
+    }
+  }
+
   // Validate personal choice data structure
   const validationErrors: string[] = [];
   
