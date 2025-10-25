@@ -1,14 +1,16 @@
 # LoreTogether
 
-**LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform that allows users to create and experience personalized, choice-driven stories. Readers make decisions throughout the story that dynamically change the narrative, creating a unique experience for each person.
+**LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform that allows users to create and experience personalized, choice-driven stories with dynamic page counts (1-10 pages). Readers make decisions throughout the story that get seamlessly woven into the narrative using smart placeholder replacement, creating a unique and personalized experience for each person.
 
 ## What Makes LoreTogether Unique
 
+- **Dynamic Story Length**: Create stories with 1-10 pages using an intelligent two-step form that adapts to your chosen page count
 - **Personal Choice System**: Stories include interactive decision points where readers select options (like choosing a character's name, color preferences, or story paths) that get dynamically inserted into later story pages
-- **Dynamic Placeholder Replacement**: Uses `{{variable}}` syntax to reference reader choices throughout the story, making each reading experience personalized
+- **Smart Placeholder Replacement**: Uses `{{variable}}` syntax to reference reader choices throughout the story, making each reading experience personalized and unique
+- **Advanced Form Validation**: Built-in validation ensures choice IDs are unique, properly formatted, and logically consistent across all story pages
 - **Community Polling**: Stories end with community polls where readers vote on story outcomes, creating engagement and discussion
 - **Reddit Integration**: Built natively on Reddit, allowing for seamless sharing, commenting, and community interaction around stories
-- **Creator-Friendly Forms**: Intuitive story creation interface that doesn't require technical knowledge to build interactive narratives
+- **Creator-Friendly Interface**: Intuitive two-step story creation process that doesn't require technical knowledge to build complex interactive narratives
 - **Session Persistence**: Your personal choices are saved throughout your reading session, allowing you to go back and change decisions
 - **Real-time Poll Results**: See live voting results and percentages as the community participates in story polls
 
@@ -62,21 +64,27 @@
 1. **Access the Creation Form**: 
    - Complete a story as a reader, then click "Create Your Own Story"
    - Or use the moderator menu if you have permissions
-2. **Fill Out Story Details**:
+
+2. **Step 1 - Basic Information**:
    - **Story Name**: The title that will appear on Reddit
-   - **Series**: Group related stories together
+   - **Series**: Group related stories together  
    - **Chapter**: Number for story organization
-3. **Write Your Story Pages** (up to 3 pages):
-   - Write your story content in the text areas
-   - Use placeholder syntax like `{{color}}` or `{{name}}` to reference choices made on earlier pages
-4. **Add Personal Choices** (optional for each page):
-   - **Personal Choice Question**: The prompt readers will see (e.g., "What color does Sarah choose?")
-   - **Choice ID**: A unique identifier for placeholders (e.g., "color" for `{{color}}`)
-   - **Choice Options**: 2-3 options readers can select from
-5. **Add End Poll** (optional):
+   - **Number of Pages**: Choose how many pages your story will have (1-10 pages)
+
+3. **Step 2 - Story Content** (dynamic form based on page count):
+   - **Write Story Pages**: For each page you specified, write your story content
+   - **Use Placeholder Syntax**: Reference future choices with `{{choice_id}}` (e.g., `{{color}}`, `{{name}}`)
+   - **Add Personal Choices** (optional for each page):
+     - **Personal Choice Question**: The prompt readers will see (e.g., "What color does Sarah choose?")
+     - **Choice ID**: A unique identifier for placeholders (e.g., "color" for `{{color}}`)
+     - **Choice Options**: Provide 2-3 options readers can select from
+   - **Validation**: The form ensures choice IDs are unique and properly formatted (letters, numbers, underscores only)
+
+4. **Add End Poll** (optional):
    - Create a community poll question about the story outcome
    - Provide 2-3 voting options for readers
-6. **Submit**: Your story gets posted to the Reddit community as an interactive post
+
+5. **Submit**: Your story gets posted to the Reddit community as an interactive post
 
 ### Personal Choice System Example
 
