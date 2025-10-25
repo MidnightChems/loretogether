@@ -1,4 +1,4 @@
-import { showForm } from '@devvit/web/client';
+import { showForm, showToast } from '@devvit/web/client';
 
 export async function createStoryForm() {
   try {
@@ -40,12 +40,12 @@ export async function createStoryForm() {
 
     // Validate required fields
     if (!basicInfoResult.values.story_name || !basicInfoResult.values.story_name.trim()) {
-      alert('Please enter a story name');
+      showToast('Please enter a story name');
       return;
     }
 
     if (!basicInfoResult.values.series || !basicInfoResult.values.series.trim()) {
-      alert('Please enter a series name');
+      showToast('Please enter a series name');
       return;
     }
 
@@ -54,13 +54,13 @@ export async function createStoryForm() {
 
     // Validate chapter number
     if (!chapterNumber || chapterNumber < 1) {
-      alert('Please enter a valid chapter number (must be 1 or greater)');
+      showToast('Please enter a valid chapter number (must be 1 or greater)');
       return;
     }
 
     // Validate page count
     if (!pageCount || pageCount < 1 || pageCount > 10) {
-      alert('Please enter a valid number of pages (1-10)');
+      showToast('Please enter a valid number of pages (1-10)');
       return;
     }
 
@@ -204,9 +204,8 @@ export async function createStoryForm() {
     // If validation errors exist, show them and return
     if (validationErrors.length > 0) {
       console.error('Form validation errors:', validationErrors);
-      // Note: In a real implementation, you'd want to show these errors to the user
-      // For now, we'll log them and potentially show a toast
-      alert('Validation errors:\n' + validationErrors.join('\n'));
+      // Show the first validation error as a toast
+      showToast(`Validation Error: ${validationErrors[0]}`);
       return;
     }
 
@@ -273,7 +272,18 @@ export async function createStoryForm() {
 
     const data = await res.json();
     console.log('Backend response:', data);
+
+    // Handle response
+    if (res.ok && data.status === 'success') {
+      showToast('✅ Story created successfully!');
+    } else {
+      // Show error message from backend or generic error
+      const errorMessage =
+        data.message || data.errors?.[0] || 'Failed to create story. Please try again.';
+      showToast(`❌ Error: ${errorMessage}`);
+    }
   } catch (err) {
     console.error('Error showing form:', err);
+    showToast('❌ An unexpected error occurred. Please try again.');
   }
 }
