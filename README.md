@@ -1,5 +1,7 @@
 # LoreTogether
 
+Created for the Reddit and Kiro Community Games Challenge
+
 **LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform where stories come alive through your choices! This innovative app allows users to create and experience personalized, choice-driven narratives with dynamic page counts (1-10 pages). Every decision you make gets seamlessly woven into the story using smart placeholder replacement, creating a unique reading experience that's different for every person.
 
 ## What Makes LoreTogether Innovative
