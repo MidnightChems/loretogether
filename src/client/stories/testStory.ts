@@ -28,7 +28,7 @@ export const testStory = {
     },
     {
       id: 'p4',
-      text: "You've learned how personal choices and dynamic text work! Now comes the final feature - community polls. At the end of each story, you'll see a poll where ALL readers can vote together on what happens next. This is how the LoreTogether community shapes future story directions. Your vote matters and helps determine where the adventure goes!",
+      text: "You've learned how personal choices and dynamic text work! Now comes the final feature - community polls. At the end of each story, you'll see a poll where ALL readers can vote together on what happens next. This is how the LoreTogether community shapes future story directions. Your vote matters and helps determine where the adventure goes! - You’ve completed the tutorial! Now it’s your turn—create your own story below!",
     },
   ],
   poll: {
