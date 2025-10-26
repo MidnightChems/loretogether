@@ -24,7 +24,7 @@ export const testStory = {
     },
     {
       id: 'p3',
-      text: "As you continue reading, you'll see {{element}} appear multiple times throughout the story. The app remembers your choice and weaves it seamlessly into the narrative. This {{element}} magic demonstrates how LoreTogether makes every reader's journey unique. Your {{element}} choice will influence how other readers see your story too!",
+      text: "When creating your story, you'll set a Page Choice ID. Use that ID to display the user's selection. For example, if your Choice ID is color, you can use {{color}} to insert the user's choice.",
     },
     {
       id: 'p4',
