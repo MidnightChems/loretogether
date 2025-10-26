@@ -1,43 +1,39 @@
 /** ---------- STORY DATA ---------- */
 export const testStory = {
-  id: "ep1",
-  title: "Man and His Dog",
-  series: "Alpha Run",
+  id: 'loretogether-tutorial',
+  title: 'Welcome to LoreTogether!',
+  series: 'App Tutorial',
   chapter: 1,
   pages: [
     {
-      id: "p1",
-      text:
-        "John kneeled beside his dog, Scout, before they left the house. Today was the day he’d finally buy a car — and Scout needed a new collar for the big day.",
+      id: 'p1',
+      text: "Welcome to LoreTogether, where stories come alive through your choices! This interactive tutorial will show you how our app works. You're about to experience a personalized story that changes based on YOUR decisions. Let's start with your first choice - this will demonstrate how personal choices shape your unique story experience.",
       personalChoice: {
-        id: "collar",
-        prompt: "Which collar does John choose for Scout?",
+        id: 'element',
+        prompt: 'Choose your magical element to see how choices work:',
         options: [
-          { id: "blue", text: "Blue — calm and dependable." },
-          { id: "red", text: "Red — bold and full of energy." },
-          { id: "green", text: "Green — adventurous and fresh." },
+          { id: 'fire', text: 'Fire' },
+          { id: 'water', text: 'Water' },
+          { id: 'earth', text: 'Earth' },
         ],
       },
     },
     {
-      id: "p2",
-      text:
-        "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{collar}} collar, tail wagging all the way to the curb.",
+      id: 'p2',
+      text: "Great choice! Notice how your selection of {{element}} now appears in this text? This is the magic of LoreTogether - the element you chose is automatically inserted using special {{tags}}. Every time you see {{element}} in the story, it's replaced with your personal choice. This creates a unique, personalized reading experience just for you!",
     },
     {
-      id: "p3",
-      text:
-        "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn’t help but notice how the {{collar}} gleamed under the light — maybe it was a sign.",
+      id: 'p3',
+      text: "As you continue reading, you'll see {{element}} appear multiple times throughout the story. The app remembers your choice and weaves it seamlessly into the narrative. This {{element}} magic demonstrates how LoreTogether makes every reader's journey unique. Your {{element}} choice will influence how other readers see your story too!",
     },
     {
-      id: "p4",
-      text:
-        "The salesperson waved. “Looking for something sporty, rugged, or roomy?” John grinned, scratching Scout’s chin. “Let’s find out.”",
+      id: 'p4',
+      text: "You've learned how personal choices and dynamic text work! Now comes the final feature - community polls. At the end of each story, you'll see a poll where ALL readers can vote together on what happens next. This is how the LoreTogether community shapes future story directions. Your vote matters and helps determine where the adventure goes!",
     },
   ],
   poll: {
-    id: "ep1-final",
-    question: "What should John test drive first?",
-    options: ["Car", "SUV", "Truck"],
+    id: 'tutorial-poll',
+    question: 'Now try the community poll feature - what tutorial topic should we cover next?',
+    options: ['Advanced Story Features', 'Creating Your Own Stories', 'Community Voting Tips'],
   },
 };
