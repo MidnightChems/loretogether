@@ -154,6 +154,10 @@ export default function App() {
   const currentPage = EPISODE.pages[pageIdx];
   if (!currentPage) return <div>Loading story...</div>;
 
+  const requiresChoice = !!currentPage.personalChoice;
+  const hasChosen = !requiresChoice || !!personal[currentPage.personalChoice?.id];
+
+
   // Dynamically replace {{placeholder}} values from player's choices
   const resolvedText = useMemo(() => {
     let text = currentPage.text;
@@ -326,12 +330,19 @@ export default function App() {
           )}
 
           <button
-            style={circleBtn(pageIdx === EPISODE.pages.length - 1)}
-            disabled={pageIdx === EPISODE.pages.length - 1}
-            onClick={() => setPageIdx((p) => Math.min(EPISODE.pages.length - 1, p + 1))}
+            style={circleBtn(pageIdx === EPISODE.pages.length - 1 || !hasChosen)}
+            disabled={pageIdx === EPISODE.pages.length - 1 || !hasChosen}
+            onClick={() => {
+              if (!hasChosen) {
+                showToast("Please make a choice before continuing.");
+                return;
+              }
+              setPageIdx((p) => Math.min(EPISODE.pages.length - 1, p + 1));
+            }}
           >
             ▶
           </button>
+
         </div>
       </div>
     </div>
