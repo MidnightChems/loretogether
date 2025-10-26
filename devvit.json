@@ -19,8 +19,8 @@
   "menu": {
     "items": [
       {
-        "label": "Create a new post",
-        "description": "loretogether",
+        "label": "Create a new Story",
+        "description": "LoreTogether",
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-create"
