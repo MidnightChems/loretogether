@@ -12,15 +12,15 @@ export const testStory = {
         id: 'element',
         prompt: 'Choose your magical element to see how choices work:',
         options: [
-          { id: 'fire', text: 'Fire — Watch how this choice affects the story!' },
-          { id: 'water', text: 'Water — Your selection will appear in future pages!' },
-          { id: 'earth', text: 'Earth — Each choice creates a personalized experience!' },
+          { id: 'fire', text: 'Fire' },
+          { id: 'water', text: 'Water' },
+          { id: 'earth', text: 'Earth' },
         ],
       },
     },
     {
       id: 'p2',
-      text: "Great choice! Notice how your selection of {{element}} now appears in this text? This is the magic of LoreTogether - the {{element}} you chose is automatically inserted using special {{tags}}. Every time you see {{element}} in the story, it's replaced with your personal choice. This creates a unique, personalized reading experience just for you!",
+      text: "Great choice! Notice how your selection of {{element}} now appears in this text? This is the magic of LoreTogether - the element you chose is automatically inserted using special {{tags}}. Every time you see {{element}} in the story, it's replaced with your personal choice. This creates a unique, personalized reading experience just for you!",
     },
     {
       id: 'p3',

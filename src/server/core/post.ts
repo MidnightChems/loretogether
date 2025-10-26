@@ -1,5 +1,27 @@
 import { context, reddit } from '@devvit/web/server';
 
+// TypeScript interface for splash screen configuration
+interface SplashConfig {
+  appDisplayName: string;
+  backgroundUri: string;
+  buttonLabel: string;
+  description: string;
+  heading: string;
+  appIconUri: string;
+  entryUri?: string;
+}
+
+// Centralized custom splash screen configuration with LoreTogether branding
+export const CUSTOM_SPLASH_CONFIG: SplashConfig = {
+  appDisplayName: 'LoreTogether',
+  backgroundUri: 'lore-splash.png',
+  buttonLabel: 'Lore Together',
+  description: 'A Choose-your-own-story builder',
+  heading: 'Welcome to LoreTogether!',
+  appIconUri: 'lore-icon.png',
+  entryUri: 'index.html',
+};
+
 export const createPost = async () => {
   const { subredditName } = context;
   if (!subredditName) {
@@ -7,16 +29,7 @@ export const createPost = async () => {
   }
 
   return await reddit.submitCustomPost({
-    splash: {
-      // Splash Screen Configuration
-      appDisplayName: 'loretogether',
-      backgroundUri: 'default-splash.png',
-      buttonLabel: 'Tap to Start',
-      description: 'An exciting interactive experience',
-      entryUri: 'index.html',
-      heading: 'Welcome to the Game!',
-      appIconUri: 'default-icon.png',
-    },
+    splash: CUSTOM_SPLASH_CONFIG,
     postData: {
       gameState: 'initial',
       score: 0,
