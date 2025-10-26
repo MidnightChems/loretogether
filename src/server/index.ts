@@ -316,9 +316,15 @@ router.post('/api/create-story', async (req, res) => {
   await reddit.submitCustomPost({
     runAs: 'USER',
     subredditName: subredditName,
-    title: story_name,
+    title: `LoreTogether Presents: ${story_name}`,
     splash: {
-      appDisplayName: 'LoreTogether ' + story_name,
+      appDisplayName: 'LoreTogether',
+      backgroundUri: 'lore-splash.png',
+      buttonLabel: 'Lore Together',
+      description: 'A Choose-your-own-story builder',
+      //entryUri: 'index.html',
+      heading: story_name,
+      appIconUri: 'lore-icon.png',
     },
     postData,
     userGeneratedContent: {
