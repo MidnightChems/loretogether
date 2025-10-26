@@ -1,18 +1,18 @@
 # LoreTogether
 
-**LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform that allows users to create and experience personalized, choice-driven stories with dynamic page counts (1-10 pages). Readers make decisions throughout the story that get seamlessly woven into the narrative using smart placeholder replacement, creating a unique and personalized experience for each person.
+**LoreTogether** is an interactive storytelling platform built on Reddit's Devvit platform where stories come alive through your choices! This innovative app allows users to create and experience personalized, choice-driven narratives with dynamic page counts (1-10 pages). Every decision you make gets seamlessly woven into the story using smart placeholder replacement, creating a unique reading experience that's different for every person.
 
-## What Makes LoreTogether Unique
+## What Makes LoreTogether Innovative
 
-- **Dynamic Story Length**: Create stories with 1-10 pages using an intelligent two-step form that adapts to your chosen page count
-- **Personal Choice System**: Stories include interactive decision points where readers select options (like choosing a character's name, color preferences, or story paths) that get dynamically inserted into later story pages
-- **Smart Placeholder Replacement**: Uses `{{variable}}` syntax to reference reader choices throughout the story, making each reading experience personalized and unique
-- **Advanced Form Validation**: Built-in validation ensures choice IDs are unique, properly formatted, and logically consistent across all story pages
-- **Community Polling**: Stories end with community polls where readers vote on story outcomes, creating engagement and discussion
-- **Reddit Integration**: Built natively on Reddit, allowing for seamless sharing, commenting, and community interaction around stories
-- **Creator-Friendly Interface**: Intuitive two-step story creation process that doesn't require technical knowledge to build complex interactive narratives
-- **Session Persistence**: Your personal choices are saved throughout your reading session, allowing you to go back and change decisions
-- **Real-time Poll Results**: See live voting results and percentages as the community participates in story polls
+- **Magic of Choice Integration**: Watch your decisions automatically appear throughout the story using special `{{tags}}` - choose "fire" as your element and see it woven seamlessly into every page where `{{element}}` appears
+- **Personalized Reading Experience**: Every reader gets a unique story based on their choices - your "fire" element creates a completely different narrative than someone who chose "water" or "earth"
+- **Dynamic Story Creation**: Build stories with 1-10 pages using an intelligent two-step form that adapts to your chosen page count, with built-in validation for choice consistency
+- **Interactive Tutorial System**: New users experience a hands-on tutorial that demonstrates how personal choices, dynamic text replacement, and community polls work together
+- **Community-Driven Outcomes**: Stories end with polls where ALL readers vote together on what happens next, creating shared narrative experiences and community engagement
+- **Session Memory**: Your personal choices persist throughout your reading session - go back and change decisions to see how they ripple through the entire story
+- **Real-time Community Feedback**: See live voting results with percentages and vote counts as the community shapes future story directions
+- **Creator-Friendly Interface**: No technical knowledge required - intuitive forms guide you through creating complex interactive narratives with choice validation and placeholder management
+- **Reddit Native Integration**: Built specifically for Reddit, enabling seamless sharing, commenting, and community discussion around interactive stories
 
 ## Technology Stack
 
@@ -40,24 +40,34 @@
 
 ### For Story Readers
 
-1. **Open a Story**: Click on any LoreTogether post in a Reddit community
-2. **Click "Launch App"**: This opens the interactive story interface in a webview
-3. **Navigate the Story**: 
+1. **Launch the Experience**: Click on any LoreTogether post in a Reddit community and hit "Launch App" to open the interactive story interface
+
+2. **Start with the Tutorial**: New users automatically experience the "Welcome to LoreTogether!" tutorial that demonstrates all features:
+   - Learn how personal choices work by selecting your magical element
+   - Watch the magic happen as your choice appears throughout the story using `{{element}}` tags
+   - Experience how each decision creates a unique, personalized narrative
+
+3. **Navigate Stories**: 
    - Use the left arrow (◀) and right arrow (▶) buttons to move between story pages
-   - The header shows your current progress: "Page X / Y" along with the series name and chapter
+   - The header shows your progress: "Page X / Y" along with series name and chapter
+   - Your position is always saved - you can leave and return anytime
+
 4. **Make Personal Choices**: 
-   - When you encounter a personal choice prompt, you'll see a question with multiple options
-   - Click on any option button to make your selection - selected choices are highlighted in orange
+   - When you see a personal choice prompt, select from the available options
+   - Chosen options are highlighted in orange to show your selection
    - Your choices are automatically saved to your browser session
-5. **Experience Dynamic Storytelling**: 
-   - As you progress, watch your previous choices get inserted into the story text
-   - Placeholders like "{{collar}}" will be replaced with your actual selections (e.g., "blue collar")
-   - You can go back to previous pages to change your choices - the story will update accordingly
-6. **Participate in Community Polls**: 
-   - At the final page, vote in the community poll about story outcomes
-   - Once you vote, you'll see real-time results showing percentages and vote counts
-   - Each Reddit user can only vote once per story
-7. **Create Your Own**: Click the "✏️ Create Your Own Story" button to access the story creation form
+
+5. **Experience the Magic**: 
+   - Watch your previous choices get dynamically inserted into story text
+   - Placeholders like `{{element}}` become your actual selections (e.g., "fire", "water", "earth")
+   - Go back to change choices and see the entire story update in real-time
+
+6. **Shape the Community Story**: 
+   - At the final page, participate in community polls about story outcomes
+   - Vote once per story and see live results with percentages and vote counts
+   - Your vote helps determine future story directions alongside other readers
+
+7. **Become a Creator**: Click "✏️ Create Your Own Story" to access the intuitive story creation tools
 
 ### For Story Creators
 
@@ -86,19 +96,24 @@
 
 5. **Submit**: Your story gets posted to the Reddit community as an interactive post
 
-### Personal Choice System Example
+### Interactive Tutorial Experience
 
-Here's how the interactive storytelling works using the included test story:
+LoreTogether includes a built-in tutorial story that demonstrates all core features:
 
-**Page 1**: "John kneeled beside his dog, Scout, before they left the house. Today was the day he'd finally buy a car — and Scout needed a new collar for the big day."
-- *Personal Choice*: "Which collar does John choose for Scout?"
-- *Options*: "Blue — calm and dependable", "Red — bold and full of energy", "Green — adventurous and fresh"
+**Page 1**: "Welcome to LoreTogether, where stories come alive through your choices! This interactive tutorial will show you how our app works. You're about to experience a personalized story that changes based on YOUR decisions. Let's start with your first choice - this will demonstrate how personal choices shape your unique story experience."
+- *Personal Choice*: "Choose your magical element to see how choices work:"
+- *Options*: "Fire — Watch how this choice affects the story!", "Water — Your selection will appear in future pages!", "Earth — Each choice creates a personalized experience!"
 
-**Page 2**: "The sun was shining as John locked the door behind them. Scout trotted proudly in his new {{collar}} collar, tail wagging all the way to the curb."
+**Page 2**: "Great choice! Notice how your selection of {{element}} now appears in this text? This is the magic of LoreTogether - the {{element}} you chose is automatically inserted using special {{tags}}. Every time you see {{element}} in the story, it's replaced with your personal choice. This creates a unique, personalized reading experience just for you!"
 
-**Page 3**: "They turned into the dealership lot, rows of shiny vehicles sparkling under the morning sun. John couldn't help but notice how the {{collar}} gleamed under the light — maybe it was a sign."
+**Page 3**: "As you continue reading, you'll see {{element}} appear multiple times throughout the story. The app remembers your choice and weaves it seamlessly into the narrative. This {{element}} magic demonstrates how LoreTogether makes every reader's journey unique. Your {{element}} choice will influence how other readers see your story too!"
 
-When a reader selects "Blue — calm and dependable" on Page 1, Pages 2 and 3 will display "blue" wherever {{collar}} appears, creating a personalized narrative that reflects their choice.
+**Page 4**: "You've learned how personal choices and dynamic text work! Now comes the final feature - community polls. At the end of each story, you'll see a poll where ALL readers can vote together on what happens next. This is how the LoreTogether community shapes future story directions. Your vote matters and helps determine where the adventure goes!"
+
+**Community Poll**: "Now try the community poll feature - what tutorial topic should we cover next?"
+- Options: "Advanced Story Features", "Creating Your Own Stories", "Community Voting Tips"
+
+When you select "Fire" on Page 1, every instance of {{element}} throughout the story becomes "fire", creating a personalized magical narrative that's unique to your choice.
 
 ## Development Commands
 
