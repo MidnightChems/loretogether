@@ -280,10 +280,11 @@ router.post('/api/create-story', async (req, res) => {
     return;
   }
 
+  const story_id = `story-${crypto.randomUUID()}`;
   const poll_id = `poll-${crypto.randomUUID()}`;
 
   // Build postData with dynamic page fields
-  const postData: any = {
+  const storyData: any = {
     story_name: story_name,
     series: series,
     chapter: chapter,
@@ -302,16 +303,19 @@ router.post('/api/create-story', async (req, res) => {
     
     // Add page story content
     if (pageStory) {
-      postData[`page_${pageNum}_story`] = pageStory;
+      storyData[`page_${pageNum}_story`] = pageStory;
     }
     
     // Add personal choice data if present
     if (pcId) {
-      postData[`page_${pageNum}_pc_id`] = pcId;
-      postData[`page_${pageNum}_pc_prompt`] = pcPrompt;
-      postData[`page_${pageNum}_pc_options`] = pcOptions;
+      storyData[`page_${pageNum}_pc_id`] = pcId;
+      storyData[`page_${pageNum}_pc_prompt`] = pcPrompt;
+      storyData[`page_${pageNum}_pc_options`] = pcOptions;
     }
   }
+
+  const storyKey = `story:${story_id}:data`;
+  await redis.set(storyKey, JSON.stringify(storyData));
 
   await reddit.submitCustomPost({
     runAs: 'USER',
@@ -326,13 +330,43 @@ router.post('/api/create-story', async (req, res) => {
       heading: story_name,
       appIconUri: 'lore-icon.png',
     },
-    postData,
+    postData: {
+      story_id
+    },
     userGeneratedContent: {
       text: "",
   },
   });
 
   res.json({ status: 'success', message: `Story post created in subreddit ${subredditName}` });
+});
+
+// Get story data from Redis
+router.get('/api/story/:storyId', async (req, res): Promise<void> => {
+  const storyId = req.params.storyId;
+  
+  if (!storyId) {
+    res.status(400).json({ error: 'storyId is required' });
+    return;
+  }
+
+  try {
+    const storyKey = `story:${storyId}:data`;
+    const storyData = await redis.get(storyKey);
+    
+    if (!storyData) {
+      res.status(404).json({ error: 'Story not found' });
+      return;
+    }
+
+    res.json({ 
+      storyId, 
+      data: JSON.parse(storyData) 
+    });
+  } catch (err) {
+    console.error('Error fetching story:', err);
+    res.status(500).json({ error: 'Failed to fetch story data' });
+  }
 });
 
 // Use router middleware

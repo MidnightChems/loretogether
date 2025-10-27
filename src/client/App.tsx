@@ -20,65 +20,16 @@ import { theme, wrap, card, hdr, storyText, navRow, circleBtn, choiceBtn } from 
 
 import { testStory } from './stories/testStory';
 
-const EPISODE = getCurrentStory(context) || testStory;
-
-function getCurrentStory(context: any) {
-  if (context?.postData) {
-    const data = context.postData;
-
-    if (!data.story_name && !data[`page_1_story`]) {
-      return null; // No valid story data, will fall back to testStory
-    }
-
-    const pages: any[] = [];
-
-    // Handle dynamic pages (page_1_story, page_2_story, ...)
-    let pageIndex = 1;
-    console.log('postData keys:', Object.keys(data));
-
-    while (data[`page_${pageIndex}_story`]) {
-      const page: any = {
-        id: `p${pageIndex}`,
-        text: data[`page_${pageIndex}_story`],
-      };
-
-      // Optional personal choice data for each page
-      if (data[`page_${pageIndex}_pc_id`]) {
-        page.personalChoice = {
-          id: data[`page_${pageIndex}_pc_id`],
-          prompt: data[`page_${pageIndex}_pc_prompt`] || '',
-          options: JSON.parse(data[`page_${pageIndex}_pc_options`] || '[]'),
-        };
-      }
-
-      pages.push(page);
-      pageIndex++;
-    }
-
-    const poll = data.poll_question
-      ? {
-          id: data.poll_id,
-          question: data.poll_question,
-          options: Array.isArray(data.poll_options)
-            ? data.poll_options
-            : JSON.parse(data.poll_options || '[]'),
-        }
-      : null;
-
-    return {
-      id: data.id,
-      title: data.story_name,
-      series: data.series,
-      chapter: data.chapter,
-      pages,
-      poll,
-    };
+/** ---------- API hooks ---------- */
+async function fetchStoryData(storyId: string): Promise<any> {
+  const res = await fetch(`/api/story/${storyId}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch story: ${res.status}`);
   }
-
-  return testStory;
+  const { data } = await res.json();
+  return data;
 }
 
-/** ---------- API hooks ---------- */
 async function fetchVotes(pollId: string): Promise<Record<string, number>> {
   console.log('fetchVotes -> pollId:', pollId);
   const res = await fetch(`/api/votes/${pollId}`);
@@ -103,40 +54,125 @@ async function submitVote(pollId: string, option: string): Promise<Response> {
   });
 }
 
+function parseStoryData(data: any): Episode {
+  const pages: any[] = [];
+
+  // Handle dynamic pages (page_1_story, page_2_story, ...)
+  let pageIndex = 1;
+  console.log('Story data keys:', Object.keys(data));
+
+  while (data[`page_${pageIndex}_story`]) {
+    const page: any = {
+      id: `p${pageIndex}`,
+      text: data[`page_${pageIndex}_story`],
+    };
+
+    // Optional personal choice data for each page
+    if (data[`page_${pageIndex}_pc_id`]) {
+      page.personalChoice = {
+        id: data[`page_${pageIndex}_pc_id`],
+        prompt: data[`page_${pageIndex}_pc_prompt`] || '',
+        options: JSON.parse(data[`page_${pageIndex}_pc_options`] || '[]'),
+      };
+    }
+
+    pages.push(page);
+    pageIndex++;
+  }
+
+  const poll = data.poll_question
+    ? {
+        id: data.poll_id,
+        question: data.poll_question,
+        options: Array.isArray(data.poll_options)
+          ? data.poll_options
+          : JSON.parse(data.poll_options || '[]'),
+      }
+    : null;
+
+  return {
+    id: data.id,
+    title: data.story_name,
+    series: data.series,
+    chapter: data.chapter,
+    pages,
+    poll,
+  };
+}
+
 /** ---------- App ---------- */
 export default function App() {
+  const [episode, setEpisode] = useState<Episode | null>(null);
+  const [loading, setLoading] = useState(true);
   const [pageIdx, setPageIdx] = useState(0);
   const [personal, setPersonal] = useState<Record<string, string>>({});
   const [hasVoted, setHasVoted] = useState(false);
   const [pollSel, setPollSel] = useState<string | null>(null);
   const [pollCounts, setPollCounts] = useState<Record<string, number>>({});
-  const atEnd = pageIdx === EPISODE.pages.length - 1;
+
+  // Load story data from Redis
+  useEffect(() => {
+    async function loadStory() {
+      try {
+        // Check if we have a story_id in postData
+        const storyId = context?.postData?.story_id;
+        
+        if (!storyId || typeof storyId !== 'string') {
+          // Fall back to test story
+          console.log('No story_id in postData, using test story');
+          setEpisode(testStory);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch story data from Redis
+        const data = await fetchStoryData(storyId);
+        const parsedEpisode = parseStoryData(data);
+        setEpisode(parsedEpisode);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading story:', err);
+        showToast('Failed to load story. Using test story.');
+        setEpisode(testStory);
+        setLoading(false);
+      }
+    }
+
+    loadStory();
+  }, []);
 
   // Load personal choices from sessionStorage
   useEffect(() => {
-    const stored = sessionStorage.getItem('personalChoices');
-    if (stored) setPersonal(JSON.parse(stored));
+    try {
+      const stored = sessionStorage.getItem('personalChoices');
+      if (stored) setPersonal(JSON.parse(stored));
+    } catch (e) {
+      // sessionStorage not available
+    }
   }, []);
 
   // Save on update
   useEffect(() => {
-    sessionStorage.setItem('personalChoices', JSON.stringify(personal));
+    try {
+      sessionStorage.setItem('personalChoices', JSON.stringify(personal));
+    } catch (e) {
+      // sessionStorage not available
+    }
   }, [personal]);
 
-  // Poll setup
   // Poll setup: load from Redis
   useEffect(() => {
     async function initPoll() {
-      if (!EPISODE.poll) {
+      if (!episode || !episode.poll) {
         return;
       }
 
       const zeros: Record<string, number> = {};
-      EPISODE.poll.options.forEach((opt: string) => (zeros[opt] = 0));
+      episode.poll.options.forEach((opt: string) => (zeros[opt] = 0));
       setPollCounts(zeros);
 
       try {
-        const counts = await fetchVotes(EPISODE.poll.id);
+        const counts = await fetchVotes(episode.poll.id);
         setPollCounts((prev) => ({ ...prev, ...counts }));
       } catch (err) {
         console.error('Error fetching votes:', err);
@@ -144,22 +180,19 @@ export default function App() {
     }
 
     initPoll();
-  }, []);
+  }, [episode]);
 
   const totalVotes = useMemo(
     () => Object.values(pollCounts).reduce((a, b) => a + b, 0),
     [pollCounts]
   );
 
-  const currentPage = EPISODE.pages[pageIdx];
-  if (!currentPage) return <div>Loading story...</div>;
-
-  const requiresChoice = !!currentPage.personalChoice;
-  const hasChosen = !requiresChoice || !!personal[currentPage.personalChoice?.id];
-
+  const atEnd = episode ? pageIdx === episode.pages.length - 1 : false;
+  const currentPage = episode?.pages[pageIdx];
 
   // Dynamically replace {{placeholder}} values from player's choices
   const resolvedText = useMemo(() => {
+    if (!currentPage) return '';
     let text = currentPage.text;
 
     // Match {{variable}} patterns
@@ -175,7 +208,10 @@ export default function App() {
     });
 
     return text;
-  }, [currentPage.text, personal]);
+  }, [currentPage, personal]);
+
+  const requiresChoice = !!currentPage?.personalChoice;
+  const hasChosen = !requiresChoice || (currentPage?.personalChoice?.id ? !!personal[currentPage.personalChoice.id] : true);
 
   function onPickPersonal(choiceId: string, optionText: string) {
     setPersonal((prev) => ({ ...prev, [choiceId]: optionText }));
@@ -183,14 +219,14 @@ export default function App() {
 
   async function onPollVote(option: string) {
     if (hasVoted) return;
-    if (!EPISODE.poll) return;
+    if (!episode || !episode.poll) return;
 
-    console.log('Client Poll ID', EPISODE.poll.id);
+    console.log('Client Poll ID', episode.poll.id);
     setHasVoted(true);
     setPollSel(option);
 
     try {
-      const res = await submitVote(EPISODE.poll.id, option);
+      const res = await submitVote(episode.poll.id, option);
 
       if (res.status === 403) {
         showToast("You've already voted on this story post.");
@@ -214,15 +250,52 @@ export default function App() {
     }
   }
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={wrap}>
+        <div style={card}>
+          <div style={{ textAlign: 'center', padding: 40, color: theme.subtle }}>
+            Loading story...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (!episode) {
+    return (
+      <div style={wrap}>
+        <div style={card}>
+          <div style={{ textAlign: 'center', padding: 40, color: theme.subtle }}>
+            Failed to load story
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentPage) {
+    return (
+      <div style={wrap}>
+        <div style={card}>
+          <div style={{ textAlign: 'center', padding: 40, color: theme.subtle }}>
+            Loading story...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={wrap}>
       <div style={card}>
         <div style={hdr}>
-          <div style={{ fontSize: 12, color: theme.subtle }}>{EPISODE.series}</div>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>{EPISODE.title}</div>
+          <div style={{ fontSize: 12, color: theme.subtle }}>{episode.series}</div>
+          <div style={{ fontSize: 22, fontWeight: 800 }}>{episode.title}</div>
           <div style={{ fontSize: 12, color: theme.subtle }}>
-            Chapter {EPISODE.chapter} · Page {pageIdx + 1} / {EPISODE.pages.length}
+            Chapter {episode.chapter} · Page {pageIdx + 1} / {episode.pages.length}
           </div>
         </div>
 
@@ -261,10 +334,10 @@ export default function App() {
 
           {atEnd ? (
             <div style={{ flex: 1, margin: '0 12px' }}>
-              {EPISODE.poll ? (
+              {episode.poll ? (
                 <>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{EPISODE.poll?.question}</div>
-                  {EPISODE.poll?.options.map((opt: string) => {
+                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{episode.poll?.question}</div>
+                  {episode.poll?.options.map((opt: string) => {
                     const count = pollCounts[opt] ?? 0;
                     const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
                     const selected = pollSel === opt;
@@ -330,14 +403,14 @@ export default function App() {
           )}
 
           <button
-            style={circleBtn(pageIdx === EPISODE.pages.length - 1 || !hasChosen)}
-            disabled={pageIdx === EPISODE.pages.length - 1 || !hasChosen}
+            style={circleBtn(pageIdx === episode.pages.length - 1 || !hasChosen)}
+            disabled={pageIdx === episode.pages.length - 1 || !hasChosen}
             onClick={() => {
               if (!hasChosen) {
                 showToast("Please make a choice before continuing.");
                 return;
               }
-              setPageIdx((p) => Math.min(EPISODE.pages.length - 1, p + 1));
+              setPageIdx((p) => Math.min(episode.pages.length - 1, p + 1));
             }}
           >
             ▶
