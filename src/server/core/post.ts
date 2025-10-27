@@ -17,7 +17,7 @@ export const CUSTOM_SPLASH_CONFIG: SplashConfig = {
   backgroundUri: 'lore-splash.png',
   buttonLabel: 'Lore Together',
   description: 'A Choose-your-own-story builder',
-  heading: 'Welcome to LoreTogether!',
+  heading: 'Welcome to LoreTogether! - Sample Story',
   appIconUri: 'lore-icon.png',
   entryUri: 'index.html',
 };

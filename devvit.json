@@ -19,7 +19,7 @@
   "menu": {
     "items": [
       {
-        "label": "Create a new Story",
+        "label": "Create a New Story",
         "description": "LoreTogether",
         "location": "subreddit",
         "forUserType": "moderator",
